@@ -23,6 +23,7 @@ jobs:
     
     - name: Generate Python dependencies
       run: |
+        apt-get update && apt-get install -y python3-pip
         python3 -m pip install --user flatpak-pip-generator
         export PATH="$HOME/.local/bin:$PATH"
         flatpak-pip-generator --output python3-yt-dlp yt-dlp
