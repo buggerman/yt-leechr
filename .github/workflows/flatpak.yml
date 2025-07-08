@@ -35,9 +35,23 @@ jobs:
             python3 -m ensurepip --default-pip || curl https://bootstrap.pypa.io/get-pip.py | python3
         fi
         python3 -m pip install --user flatpak-pip-generator
-        # Use full path to avoid PATH issues
-        $HOME/.local/bin/flatpak-pip-generator --output python3-yt-dlp yt-dlp
-        $HOME/.local/bin/flatpak-pip-generator --output python3-requests requests
+        # Debug: check where it was installed
+        echo "HOME is: $HOME"
+        echo "Contents of ~/.local/bin:"
+        ls -la ~/.local/bin/ || echo "Directory doesn't exist"
+        echo "Looking for flatpak-pip-generator:"
+        find ~ -name "flatpak-pip-generator" -type f 2>/dev/null || echo "Not found in home"
+        find /usr -name "flatpak-pip-generator" -type f 2>/dev/null || echo "Not found in /usr"
+        # Try to find and run it
+        GENERATOR=$(find ~ -name "flatpak-pip-generator" -type f 2>/dev/null | head -1)
+        if [ -n "$GENERATOR" ]; then
+            echo "Found generator at: $GENERATOR"
+            $GENERATOR --output python3-yt-dlp yt-dlp
+            $GENERATOR --output python3-requests requests
+        else
+            echo "ERROR: Could not find flatpak-pip-generator"
+            exit 1
+        fi
     
     - name: Build Flatpak
       uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v6
