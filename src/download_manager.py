@@ -80,12 +80,19 @@ class DownloadWorker(QThread):
             'audioformat': self.settings.get('audio_format', 'mp3'),
             'audioquality': self.settings.get('audio_quality', '192'),
             'prefer_ffmpeg': True,  # Use ffmpeg for better quality merging
-            'keepvideo': False,  # Don't keep separate video file after merging
+            'merge_output_format': 'mp4',  # Always merge to mp4 when separate streams
+            'postprocessors': [],  # Initialize empty postprocessors list
         }
         
-        # Only add merge settings for video+audio formats
-        if '+' in format_selector and not self.settings.get('extract_audio', False):
-            ydl_opts['merge_output_format'] = 'mp4'  # Merge video+audio into single mp4 file
+        # Force merge for video+audio downloads (not audio-only)
+        if not self.settings.get('extract_audio', False):
+            # Add FFmpeg video converter to ensure proper container
+            ydl_opts['postprocessors'].append({
+                'key': 'FFmpegVideoConvertor',
+                'preferedformat': 'mp4',
+            })
+            # Force keep single file, remove intermediates
+            ydl_opts['keepvideo'] = False
         
         # Add subtitle options
         if self.settings.get('download_subtitles', False):

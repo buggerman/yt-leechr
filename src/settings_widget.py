@@ -236,16 +236,16 @@ class SettingsWidget(QWidget):
             
     def get_settings(self) -> Dict[str, Any]:
         format_map = {
-            "Best (Video + Audio)": "bestvideo+bestaudio/best",
-            "4K (if available)": "bestvideo[height<=2160]+bestaudio/best[height<=2160]",
-            "1440p (if available)": "bestvideo[height<=1440]+bestaudio/best[height<=1440]",
-            "1080p (if available)": "bestvideo[height<=1080]+bestaudio/best[height<=1080]",
-            "720p (if available)": "bestvideo[height<=720]+bestaudio/best[height<=720]",
-            "480p (if available)": "bestvideo[height<=480]+bestaudio/best[height<=480]",
+            "Best (Video + Audio)": "best[ext=mp4]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best",
+            "4K (if available)": "best[height<=2160][ext=mp4]/bestvideo[height<=2160][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=2160]+bestaudio/best[height<=2160]",
+            "1440p (if available)": "best[height<=1440][ext=mp4]/bestvideo[height<=1440][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=1440]+bestaudio/best[height<=1440]",
+            "1080p (if available)": "best[height<=1080][ext=mp4]/bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=1080]+bestaudio/best[height<=1080]",
+            "720p (if available)": "best[height<=720][ext=mp4]/bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best[height<=720]",
+            "480p (if available)": "best[height<=480][ext=mp4]/bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=480]+bestaudio/best[height<=480]",
             "Best Video Only": "bestvideo",
             "Best Audio Only": "bestaudio",
             "Worst (Smallest File)": "worst",
-            "Custom Format": self.custom_format_edit.text() or "bestvideo+bestaudio/best"
+            "Custom Format": self.custom_format_edit.text() or "best[ext=mp4]/bestvideo+bestaudio/best"
         }
         
         return {
