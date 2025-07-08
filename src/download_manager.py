@@ -234,7 +234,15 @@ class DownloadWorker(QThread):
         ffmpeg_names = ['ffmpeg', 'ffmpeg.exe']
         
         # Check for bundled ffmpeg first
-        bundle_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        # Handle both PyInstaller bundle and source environments
+        import sys
+        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+            # Running in PyInstaller bundle
+            bundle_dir = sys._MEIPASS
+        else:
+            # Running from source
+            bundle_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            
         bundled_ffmpeg = os.path.join(bundle_dir, 'tools', 'ffmpeg')
         if os.path.exists(bundled_ffmpeg):
             ffmpeg_names.insert(0, bundled_ffmpeg)
@@ -268,7 +276,15 @@ class DownloadWorker(QThread):
         mkvmerge_names = ['mkvmerge', 'mkvmerge.exe']
         
         # Check for bundled mkvmerge first
-        bundle_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        # Handle both PyInstaller bundle and source environments
+        import sys
+        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+            # Running in PyInstaller bundle
+            bundle_dir = sys._MEIPASS
+        else:
+            # Running from source
+            bundle_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            
         bundled_mkvmerge = os.path.join(bundle_dir, 'tools', 'mkvmerge')
         if os.path.exists(bundled_mkvmerge):
             mkvmerge_names.insert(0, bundled_mkvmerge)
