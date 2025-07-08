@@ -170,3 +170,10 @@ python3-*.json
 
 # Claude development context (keep local only)
 CLAUDE.md
+
+# Flathub submission guide (keep local only)
+FLATHUB_SUBMISSION_GUIDE.md
+
+# Flathub submission files (keep local only - not needed for regular distribution)
+python3-yt-dlp.json
+python3-requests.json
