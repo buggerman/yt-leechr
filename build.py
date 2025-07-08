@@ -52,7 +52,6 @@ def build_executable():
         '--onefile',
         '--windowed',
         '--name', f'YT-Leechr-{platform_name}',
-        '--icon', 'assets/icon.ico' if os.path.exists('assets/icon.ico') else None,
         '--add-data', 'src:src',
         '--hidden-import', 'PyQt6.QtCore',
         '--hidden-import', 'PyQt6.QtGui',
@@ -62,8 +61,19 @@ def build_executable():
         'main.py'
     ]
     
-    # Remove None values
-    cmd = [arg for arg in cmd if arg is not None]
+    # Add platform-specific icon
+    if platform.system() == 'Darwin':
+        if os.path.exists('assets/icon.icns'):
+            cmd.insert(-1, '--icon')
+            cmd.insert(-1, 'assets/icon.icns')
+    elif platform.system() == 'Windows':
+        if os.path.exists('assets/icon.ico'):
+            cmd.insert(-1, '--icon')
+            cmd.insert(-1, 'assets/icon.ico')
+    else:  # Linux
+        if os.path.exists('assets/icon.ico'):
+            cmd.insert(-1, '--icon')
+            cmd.insert(-1, 'assets/icon.ico')
     
     print(f"   Running: {' '.join(cmd)}")
     
@@ -97,7 +107,11 @@ def create_app_bundle_macos():
         shutil.move(f"dist/{executable_name}", f"{app_path}/Contents/MacOS/YT-Leechr")
         os.chmod(f"{app_path}/Contents/MacOS/YT-Leechr", 0o755)
     
-    # Create Info.plist
+    # Copy icon to Resources
+    if os.path.exists('assets/icon.icns'):
+        shutil.copy2('assets/icon.icns', f"{app_path}/Contents/Resources/icon.icns")
+    
+    # Create Info.plist with icon reference
     info_plist = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -109,11 +123,13 @@ def create_app_bundle_macos():
     <key>CFBundleName</key>
     <string>YT Leechr</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0.0</string>
+    <string>0.5.0</string>
     <key>CFBundleVersion</key>
-    <string>1.0.0</string>
+    <string>0.5.0</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
+    <key>CFBundleIconFile</key>
+    <string>icon.icns</string>
     <key>LSMinimumSystemVersion</key>
     <string>10.14</string>
     <key>NSHighResolutionCapable</key>
@@ -138,10 +154,16 @@ def create_portable_package():
     
     os.makedirs(package_dir, exist_ok=True)
     
-    # Copy executable
-    executable_name = f"YT-Leechr-{platform_name}"
-    if os.path.exists(f"dist/{executable_name}"):
-        shutil.copy2(f"dist/{executable_name}", package_dir)
+    # Copy executable (skip on macOS since we have app bundle)
+    if platform.system() != 'Darwin':
+        executable_name = f"YT-Leechr-{platform_name}"
+        if os.path.exists(f"dist/{executable_name}"):
+            shutil.copy2(f"dist/{executable_name}", package_dir)
+    else:
+        # On macOS, copy the app bundle instead
+        app_name = "YT Leechr.app"
+        if os.path.exists(f"dist/{app_name}"):
+            shutil.copytree(f"dist/{app_name}", f"{package_dir}/{app_name}")
     
     # Copy documentation
     docs_to_copy = ['README.md', 'LICENSE']
@@ -151,10 +173,18 @@ def create_portable_package():
     
     # Create run script
     if platform.system() == 'Windows':
+        executable_name = f"YT-Leechr-{platform_name}"
         run_script = f"@echo off\n{executable_name}.exe %*\n"
         with open(f"{package_dir}/run.bat", 'w') as f:
             f.write(run_script)
+    elif platform.system() == 'Darwin':
+        # For macOS, create a script to launch the app bundle
+        run_script = f"#!/bin/bash\nopen \"YT Leechr.app\"\n"
+        with open(f"{package_dir}/run.sh", 'w') as f:
+            f.write(run_script)
+        os.chmod(f"{package_dir}/run.sh", 0o755)
     else:
+        executable_name = f"YT-Leechr-{platform_name}"
         run_script = f"#!/bin/bash\n./{executable_name} \"$@\"\n"
         with open(f"{package_dir}/run.sh", 'w') as f:
             f.write(run_script)

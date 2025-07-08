@@ -158,3 +158,6 @@ Thumbs.db
 # Application specific
 config.json
 settings.ini
+
+# Claude development context (keep local only)
+CLAUDE.md
