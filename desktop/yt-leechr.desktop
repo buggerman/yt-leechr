@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=YT Leechr
+Comment=A feature-rich GUI for yt-dlp
+GenericName=Video Downloader
+Exec=yt-leechr
+Icon=com.github.buggerman.yt-leechr
+Type=Application
+Categories=AudioVideo;Video;Network;Qt;
+Keywords=video;download;youtube;yt-dlp;media;
+StartupNotify=true
+StartupWMClass=YT Leechr
+MimeType=x-scheme-handler/http;x-scheme-handler/https;
+X-Flatpak-Tags=proprietary;
