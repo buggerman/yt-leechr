@@ -23,10 +23,21 @@ jobs:
     
     - name: Generate Python dependencies
       run: |
+        # Install pip (container might use different package manager)
+        if command -v apt-get >/dev/null 2>&1; then
+            apt-get update && apt-get install -y python3-pip
+        elif command -v dnf >/dev/null 2>&1; then
+            dnf install -y python3-pip
+        elif command -v pacman >/dev/null 2>&1; then
+            pacman -S --noconfirm python-pip
+        else
+            # Try to install pip directly
+            python3 -m ensurepip --default-pip || curl https://bootstrap.pypa.io/get-pip.py | python3
+        fi
         python3 -m pip install --user flatpak-pip-generator
-        export PATH="$HOME/.local/bin:$PATH"
-        flatpak-pip-generator --output python3-yt-dlp yt-dlp
-        flatpak-pip-generator --output python3-requests requests
+        # Run each command separately to avoid import issues
+        python3 -m flatpak_pip_generator --output python3-yt-dlp yt-dlp
+        python3 -m flatpak_pip_generator --output python3-requests requests
     
     - name: Build Flatpak
       uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v6
