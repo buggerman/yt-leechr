@@ -5,13 +5,19 @@ Download manager handling yt-dlp integration
 import os
 import threading
 import queue
-import subprocess
-import glob
-import shutil
 from typing import Dict, Any, Optional, List, Tuple
 from PyQt6.QtCore import QObject, pyqtSignal, QThread, QTimer
 import yt_dlp
 from .download_item import DownloadItem, DownloadStatus
+
+# Optional imports for muxing functionality
+try:
+    import subprocess
+    import glob
+    import shutil
+    MUXING_AVAILABLE = True
+except ImportError:
+    MUXING_AVAILABLE = False
 
 class DownloadWorker(QThread):
     progress_updated = pyqtSignal(str, dict)
@@ -153,6 +159,9 @@ class DownloadWorker(QThread):
         
     def handle_post_download_muxing(self, expected_path: str, info: dict) -> str:
         """Handle muxing of separate video/audio files after download"""
+        if not MUXING_AVAILABLE:
+            return expected_path
+            
         output_dir = os.path.dirname(expected_path)
         base_name = os.path.splitext(os.path.basename(expected_path))[0]
         
@@ -214,6 +223,9 @@ class DownloadWorker(QThread):
         
     def try_ffmpeg_mux(self, video_file: str, audio_file: str, output_file: str) -> bool:
         """Try to mux using ffmpeg"""
+        if not MUXING_AVAILABLE:
+            return False
+            
         try:
             cmd = [
                 'ffmpeg', '-i', video_file, '-i', audio_file,
@@ -230,6 +242,9 @@ class DownloadWorker(QThread):
             
     def try_mkvmerge_mux(self, video_file: str, audio_file: str, output_file: str) -> bool:
         """Try to mux using mkvmerge from mkvtoolnix"""
+        if not MUXING_AVAILABLE:
+            return False
+            
         try:
             cmd = [
                 'mkvmerge', '-o', output_file,
