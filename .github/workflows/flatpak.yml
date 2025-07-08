@@ -35,9 +35,9 @@ jobs:
             python3 -m ensurepip --default-pip || curl https://bootstrap.pypa.io/get-pip.py | python3
         fi
         python3 -m pip install --user flatpak-pip-generator
-        # The script is installed as flatpak_pip_generator (with underscores)
-        ~/.local/bin/flatpak_pip_generator --output python3-yt-dlp yt-dlp
-        ~/.local/bin/flatpak_pip_generator --output python3-requests requests
+        # Run each command separately to avoid import issues
+        python3 -m flatpak_pip_generator --output python3-yt-dlp yt-dlp
+        python3 -m flatpak_pip_generator --output python3-requests requests
     
     - name: Build Flatpak
       uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v6
