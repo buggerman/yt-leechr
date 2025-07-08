@@ -43,7 +43,7 @@ jobs:
       uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v6
       with:
         bundle: yt-leechr.flatpak
-        manifest-path: com.github.buggerman.yt-leechr.json
+        manifest-path: io.github.buggerman.yt-leechr.json
         cache-key: flatpak-builder-${{ github.sha }}
     
     - name: Upload Flatpak artifact

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>com.github.buggerman.yt-leechr</id>
+  <id>io.github.buggerman.yt-leechr</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
   <name>YT Leechr</name>
@@ -30,7 +30,7 @@
     </ul>
   </description>
   
-  <launchable type="desktop-id">com.github.buggerman.yt-leechr.desktop</launchable>
+  <launchable type="desktop-id">io.github.buggerman.yt-leechr.desktop</launchable>
   
   <url type="homepage">https://github.com/buggerman/yt-leechr</url>
   <url type="bugtracker">https://github.com/buggerman/yt-leechr/issues</url>
@@ -79,8 +79,8 @@
   
   <screenshots>
     <screenshot type="default">
-      <caption>Main application window</caption>
-      <image>https://raw.githubusercontent.com/buggerman/yt-leechr/main/assets/icon.png</image>
+      <caption>Main application window showing download queue and progress tracking</caption>
+      <image>https://raw.githubusercontent.com/buggerman/yt-leechr/main/screenshots/main-window.png</image>
     </screenshot>
   </screenshots>
   
