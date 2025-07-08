@@ -48,9 +48,15 @@ jobs:
       env:
         QT_QPA_PLATFORM: offscreen
 
-    - name: List build artifacts
+    - name: List build artifacts (Unix)
+      if: runner.os != 'Windows'
       run: |
         ls -la dist/
+        
+    - name: List build artifacts (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        dir dist\
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
@@ -78,7 +84,7 @@ jobs:
         path: dist/
     
     - name: Display structure of downloaded files
-      run: ls -R dist/
+      run: find dist/ -type f || true
     
     - name: Create Release
       uses: softprops/action-gh-release@v1
