@@ -84,6 +84,16 @@ class DownloadWorker(QThread):
         ffmpeg_path = self.get_bundled_ffmpeg_path()
         print(f"DEBUG: ffmpeg_path = {ffmpeg_path}")
         print(f"DEBUG: format_selector = {format_selector}")
+        if ffmpeg_path:
+            print(f"DEBUG: ffmpeg exists = {os.path.exists(ffmpeg_path)}")
+            print(f"DEBUG: ffmpeg executable = {os.access(ffmpeg_path, os.X_OK)}")
+            # Test if we can actually run it
+            try:
+                import subprocess
+                result = subprocess.run([ffmpeg_path, '-version'], capture_output=True, text=True, timeout=3)
+                print(f"DEBUG: ffmpeg test run = {result.returncode == 0}")
+            except Exception as e:
+                print(f"DEBUG: ffmpeg test failed = {e}")
         
         ydl_opts = {
             'outtmpl': os.path.join(output_dir, output_template),
