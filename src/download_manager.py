@@ -83,10 +83,6 @@ class DownloadWorker(QThread):
         # Get bundled ffmpeg path
         ffmpeg_path = self.get_bundled_ffmpeg_path()
         
-        # Force MKV output for video downloads
-        if not self.settings.get('extract_audio', False):
-            output_template = output_template.replace('.%(ext)s', '.mkv')
-        
         ydl_opts = {
             'outtmpl': os.path.join(output_dir, output_template),
             'format': format_selector,
@@ -97,13 +93,21 @@ class DownloadWorker(QThread):
             'extractaudio': self.settings.get('extract_audio', False),
             'audioformat': self.settings.get('audio_format', 'mp3'),
             'audioquality': self.settings.get('audio_quality', '192'),
-            'merge_output_format': 'mkv',  # Always merge to MKV
-            'prefer_ffmpeg': True,
         }
         
-        # Set ffmpeg location if we have bundled version
+        # Force ffmpeg usage and set location
         if ffmpeg_path:
             ydl_opts['ffmpeg_location'] = ffmpeg_path
+            
+        # For video downloads, force merging
+        if not self.settings.get('extract_audio', False) and '+' in format_selector:
+            ydl_opts['merge_output_format'] = 'mkv'
+            ydl_opts['prefer_ffmpeg'] = True
+            # Force post-processing to ensure merge happens
+            ydl_opts['postprocessors'] = [{
+                'key': 'FFmpegVideoConvertor',
+                'preferedformat': 'mkv',
+            }]
         
         # Add subtitle options
         if self.settings.get('download_subtitles', False):
