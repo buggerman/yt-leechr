@@ -96,7 +96,7 @@ YT Leechr is available as a Flatpak for universal Linux distribution support wit
 
 **Install from Flathub (Coming Soon):**
 ```bash
-flatpak install flathub com.github.buggerman.yt-leechr
+flatpak install flathub io.github.buggerman.yt-leechr
 ```
 
 **Build from Source:**

@@ -119,13 +119,13 @@ def create_app_bundle_macos():
     <key>CFBundleExecutable</key>
     <string>YT-Leechr</string>
     <key>CFBundleIdentifier</key>
-    <string>com.github.buggerman.yt-leechr</string>
+    <string>io.github.buggerman.yt-leechr</string>
     <key>CFBundleName</key>
     <string>YT Leechr</string>
     <key>CFBundleShortVersionString</key>
-    <string>0.5.0</string>
+    <string>0.6.0</string>
     <key>CFBundleVersion</key>
-    <string>0.5.0</string>
+    <string>0.6.0</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleIconFile</key>

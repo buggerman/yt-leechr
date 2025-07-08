@@ -12,7 +12,7 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
 
 setup(
     name="yt-leechr",
-    version="0.5.0",
+    version="0.6.0",
     author="buggerman",
     author_email="buggerman@users.noreply.github.com",
     description="A feature-rich, cross-platform GUI for yt-dlp",

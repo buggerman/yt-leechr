@@ -13,7 +13,7 @@ This document covers building, installing, and distributing YT Leechr as a Flatp
    ```
 3. Run the application:
    ```bash
-   flatpak run com.github.buggerman.yt-leechr
+   flatpak run io.github.buggerman.yt-leechr
    ```
 
 ### From Flathub (Future)
@@ -21,7 +21,7 @@ This document covers building, installing, and distributing YT Leechr as a Flatp
 *Note: Submission to Flathub is planned for future releases.*
 
 ```bash
-flatpak install flathub com.github.buggerman.yt-leechr
+flatpak install flathub io.github.buggerman.yt-leechr
 ```
 
 ## Building from Source
@@ -80,14 +80,14 @@ If you prefer manual control:
 
 2. **Build manually**:
    ```bash
-   flatpak-builder --force-clean --repo=repo build-dir com.github.buggerman.yt-leechr.json
+   flatpak-builder --force-clean --repo=repo build-dir io.github.buggerman.yt-leechr.json
    flatpak --user remote-add --no-gpg-verify --if-not-exists yt-leechr-repo repo
-   flatpak --user install yt-leechr-repo com.github.buggerman.yt-leechr
+   flatpak --user install yt-leechr-repo io.github.buggerman.yt-leechr
    ```
 
 3. **Create bundle**:
    ```bash
-   flatpak build-bundle repo yt-leechr.flatpak com.github.buggerman.yt-leechr
+   flatpak build-bundle repo yt-leechr.flatpak io.github.buggerman.yt-leechr
    ```
 
 ## Usage
@@ -96,7 +96,7 @@ If you prefer manual control:
 
 ```bash
 # Via flatpak command
-flatpak run com.github.buggerman.yt-leechr
+flatpak run io.github.buggerman.yt-leechr
 
 # Via desktop launcher (after installation)
 # Look for "YT Leechr" in your application menu
@@ -139,13 +139,13 @@ Downloads are saved to these sandboxed locations:
 3. **Network connection issues**:
    ```bash
    # Test network access
-   flatpak run --devel com.github.buggerman.yt-leechr
+   flatpak run --devel io.github.buggerman.yt-leechr
    ```
 
 4. **GUI not starting**:
    ```bash
    # Run with debug output
-   flatpak run --verbose com.github.buggerman.yt-leechr
+   flatpak run --verbose io.github.buggerman.yt-leechr
    ```
 
 ### Logs and Debugging
@@ -157,7 +157,7 @@ journalctl --user -f | grep yt-leechr
 
 Debug the Flatpak sandbox:
 ```bash
-flatpak run --devel --command=bash com.github.buggerman.yt-leechr
+flatpak run --devel --command=bash io.github.buggerman.yt-leechr
 ```
 
 ## Development
@@ -167,7 +167,7 @@ flatpak run --devel --command=bash com.github.buggerman.yt-leechr
 1. Make changes to the source code
 2. Update the Git tag in the manifest if needed
 3. Rebuild: `./build-flatpak.sh`
-4. Test: `flatpak run com.github.buggerman.yt-leechr`
+4. Test: `flatpak run io.github.buggerman.yt-leechr`
 
 ### Updating Dependencies
 
@@ -179,7 +179,7 @@ When adding new Python packages:
 
 ### Manifest Structure
 
-The `com.github.buggerman.yt-leechr.json` manifest contains:
+The `io.github.buggerman.yt-leechr.json` manifest contains:
 
 - **Runtime**: KDE Platform 6.7 (provides Qt6 and system libraries)
 - **Base**: PyQt BaseApp 6.7 (provides PyQt6 and Python)
@@ -209,7 +209,7 @@ GitHub Actions automatically:
 For Flathub distribution:
 
 1. Fork the [Flathub repository](https://github.com/flathub/flathub)
-2. Add the manifest to `com.github.buggerman.yt-leechr` directory
+2. Add the manifest to `io.github.buggerman.yt-leechr` directory
 3. Submit pull request following [Flathub guidelines](https://docs.flathub.org/)
 
 ### Bundle Distribution

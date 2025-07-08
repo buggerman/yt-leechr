@@ -3,7 +3,7 @@
 
 set -e
 
-APP_ID="com.github.buggerman.yt-leechr"
+APP_ID="io.github.buggerman.yt-leechr"
 MANIFEST="${APP_ID}.json"
 BUILD_DIR="build-dir"
 REPO_DIR="repo"

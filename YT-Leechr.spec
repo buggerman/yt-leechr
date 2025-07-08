@@ -67,7 +67,7 @@ if sys.platform == 'darwin':
         exe,
         name='YT Leechr.app',
         icon='assets/icon.icns' if os.path.exists('assets/icon.icns') else None,
-        bundle_identifier='com.github.buggerman.yt-leechr',
+        bundle_identifier='io.github.buggerman.yt-leechr',
         info_plist={
             'NSHighResolutionCapable': 'True',
             'LSMinimumSystemVersion': '10.14',
