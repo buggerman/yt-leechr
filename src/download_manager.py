@@ -245,17 +245,24 @@ class DownloadWorker(QThread):
         else:
             bundle_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             
-        # Check for bundled mkvmerge first
-        muxing_tools = [
-            os.path.join(bundle_dir, 'tools', 'mkvmerge'),
-            os.path.join(bundle_dir, 'tools', 'mkvmerge.bat'),
-            os.path.join(bundle_dir, 'tools', 'ffmpeg'),
-            os.path.join(bundle_dir, 'tools', 'ffmpeg.exe')
-        ]
+        # Check for bundled mkvmerge first, platform-specific
+        import platform
+        if platform.system() == 'Windows':
+            muxing_tools = [
+                os.path.join(bundle_dir, 'tools', 'mkvmerge.bat'),
+                os.path.join(bundle_dir, 'tools', 'ffmpeg.exe')
+            ]
+        else:
+            muxing_tools = [
+                os.path.join(bundle_dir, 'tools', 'mkvmerge'),
+                os.path.join(bundle_dir, 'tools', 'ffmpeg')
+            ]
         
         for tool in muxing_tools:
-            if os.path.exists(tool) and os.access(tool, os.X_OK):
-                return tool
+            if os.path.exists(tool):
+                # On Windows, don't check execute permissions for .bat files
+                if tool.endswith('.bat') or os.access(tool, os.X_OK):
+                    return tool
                 
         return None
         
