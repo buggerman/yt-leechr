@@ -8,7 +8,7 @@ import queue
 import subprocess
 import glob
 import shutil
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple
 from PyQt6.QtCore import QObject, pyqtSignal, QThread, QTimer
 import yt_dlp
 from .download_item import DownloadItem, DownloadStatus
@@ -174,7 +174,7 @@ class DownloadWorker(QThread):
         # No separate files found or muxing failed, return expected path
         return expected_path
         
-    def find_separate_files(self, output_dir: str, base_name: str) -> tuple[Optional[str], Optional[str]]:
+    def find_separate_files(self, output_dir: str, base_name: str) -> Tuple[Optional[str], Optional[str]]:
         """Find separate video and audio files in the output directory"""
         video_file = None
         audio_file = None
