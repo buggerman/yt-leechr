@@ -241,6 +241,47 @@ rm "~/Library/Application Support/YT-Leechr/settings.ini"
 rm "~/.config/YT-Leechr/settings.ini"
 ```
 
+### macOS Security Issues
+
+**Symptoms:**
+- "YT Leechr.app is damaged and can't be opened"
+- "Cannot verify the developer" warning
+- Application blocked by Gatekeeper
+- "App can't be opened because it is from an unidentified developer"
+
+**Solutions:**
+
+**1. Remove Quarantine Attributes:**
+```bash
+# Navigate to the app location and run:
+xattr -cr /path/to/YT\ Leechr.app
+
+# Example for Downloads folder:
+xattr -cr ~/Downloads/YT\ Leechr.app
+```
+
+**2. Allow in Security Settings:**
+1. Try to open the app (it will fail)
+2. Go to **System Preferences → Security & Privacy → General**
+3. Click **"Open Anyway"** next to the blocked app message
+4. Confirm by clicking **"Open"** in the dialog
+
+**3. Right-Click Method:**
+1. Right-click on **YT Leechr.app**
+2. Select **"Open"** from context menu
+3. Click **"Open"** in the security dialog
+
+**4. Disable Gatekeeper (Advanced):**
+```bash
+# Temporarily disable (not recommended)
+sudo spctl --master-disable
+
+# Re-enable after installation
+sudo spctl --master-enable
+```
+
+**Note:** These security warnings appear because the app is not code-signed with an Apple Developer certificate. The `xattr -cr` command removes the quarantine flag that macOS applies to downloaded files.
+
 ### GUI Display Issues
 
 **Symptoms:**
