@@ -63,9 +63,9 @@ class DownloadWorker(QThread):
                         ydl.download([self.download_item.url])
                         
                         if not self.is_cancelled:
-                            # Find the downloaded file(s) and handle muxing if needed
+                            # If separate files were downloaded, mux them
                             output_path = self.get_output_path(info)
-                            final_path = self.handle_post_download_muxing(output_path, info)
+                            final_path = self.mux_if_needed(output_path, info)
                             self.download_completed.emit(self.download_item.id, final_path)
                             
                     except Exception as e:
@@ -80,6 +80,13 @@ class DownloadWorker(QThread):
         output_template = self.settings.get('output_template', '%(title)s.%(ext)s')
         format_selector = self.settings.get('format', 'best')
         
+        # Get bundled ffmpeg path
+        ffmpeg_path = self.get_bundled_ffmpeg_path()
+        
+        # Force MKV output for video downloads
+        if not self.settings.get('extract_audio', False):
+            output_template = output_template.replace('.%(ext)s', '.mkv')
+        
         ydl_opts = {
             'outtmpl': os.path.join(output_dir, output_template),
             'format': format_selector,
@@ -90,18 +97,13 @@ class DownloadWorker(QThread):
             'extractaudio': self.settings.get('extract_audio', False),
             'audioformat': self.settings.get('audio_format', 'mp3'),
             'audioquality': self.settings.get('audio_quality', '192'),
+            'merge_output_format': 'mkv',  # Always merge to MKV
+            'prefer_ffmpeg': True,
         }
         
-        # For video+audio downloads, let yt-dlp download separate files
-        # We'll handle muxing ourselves in post-processing
-        if not self.settings.get('extract_audio', False) and '+' in format_selector:
-            # Don't merge - we'll handle it ourselves
-            ydl_opts['keepvideo'] = True  # Keep both video and audio files
-            # Remove any automatic merging to ensure we get separate files
-            ydl_opts['postprocessors'] = []
-        else:
-            # For single format downloads, let yt-dlp handle normally
-            ydl_opts['prefer_ffmpeg'] = True
+        # Set ffmpeg location if we have bundled version
+        if ffmpeg_path:
+            ydl_opts['ffmpeg_location'] = ffmpeg_path
         
         # Add subtitle options
         if self.settings.get('download_subtitles', False):
@@ -119,6 +121,28 @@ class DownloadWorker(QThread):
             ydl_opts['addmetadata'] = True
             
         return ydl_opts
+        
+    def get_bundled_ffmpeg_path(self) -> Optional[str]:
+        """Get the path to bundled ffmpeg executable"""
+        import sys
+        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+            # Running in PyInstaller bundle
+            bundle_dir = sys._MEIPASS
+        else:
+            # Running from source
+            bundle_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            
+        # Check for ffmpeg
+        ffmpeg_paths = [
+            os.path.join(bundle_dir, 'tools', 'ffmpeg'),
+            os.path.join(bundle_dir, 'tools', 'ffmpeg.exe')
+        ]
+        
+        for path in ffmpeg_paths:
+            if os.path.exists(path) and os.access(path, os.X_OK):
+                return path
+                
+        return None
         
     def progress_hook(self, d):
         if self.is_cancelled:
@@ -158,202 +182,82 @@ class DownloadWorker(QThread):
         
         return os.path.join(output_dir, filename)
         
-    def handle_post_download_muxing(self, expected_path: str, info: dict) -> str:
-        """Handle muxing of separate video/audio files after download"""
-        if not MUXING_AVAILABLE:
-            return expected_path
-            
+    def mux_if_needed(self, expected_path: str, info: dict) -> str:
+        """Simple muxing check - look for separate video/audio files and mux them"""
         output_dir = os.path.dirname(expected_path)
-        
-        # Look for separate video and audio files using video title
         video_title = info.get('title', 'download')
-        self.muxing_status.emit(self.download_item.id, "🔍 Checking for separate video/audio files...")
-        video_file, audio_file = self.find_separate_files(output_dir, video_title)
         
-        if video_file and audio_file:
-            # We have separate files - need to mux them
-            self.muxing_status.emit(self.download_item.id, f"📁 Found video: {os.path.basename(video_file)}")
-            self.muxing_status.emit(self.download_item.id, f"🎵 Found audio: {os.path.basename(audio_file)}")
-            
-            base_name = os.path.splitext(os.path.basename(video_file))[0]
-            # Remove common yt-dlp suffixes like .f137 from the base name
-            import re
-            base_name = re.sub(r'\.\w+$', '', base_name)
-            
-            self.muxing_status.emit(self.download_item.id, "🔧 Muxing video and audio files...")
-            muxed_file = self.mux_files(video_file, audio_file, output_dir, base_name)
-            if muxed_file:
-                # Clean up separate files after successful muxing
-                try:
-                    os.remove(video_file)
-                    os.remove(audio_file)
-                    self.muxing_status.emit(self.download_item.id, f"✅ Successfully muxed to: {os.path.basename(muxed_file)}")
-                except OSError:
-                    pass  # Ignore cleanup errors
-                return muxed_file
-            else:
-                # Muxing failed - emit a warning but continue with separate files
-                self.muxing_status.emit(self.download_item.id, f"⚠️ Muxing failed - keeping separate files")
-                self.muxing_status.emit(self.download_item.id, f"📹 Video: {os.path.basename(video_file)}")
-                self.muxing_status.emit(self.download_item.id, f"🎵 Audio: {os.path.basename(audio_file)}")
-                return video_file  # Return video file as primary
-        else:
-            self.muxing_status.emit(self.download_item.id, "ℹ️ Single file download - no muxing needed")
-        
-        # No separate files found, return expected path
-        return expected_path
-        
-    def find_separate_files(self, output_dir: str, video_title: str) -> Tuple[Optional[str], Optional[str]]:
-        """Find separate video and audio files in the output directory based on video title"""
-        video_file = None
-        audio_file = None
-        
-        # Clean the title like yt-dlp does for filename generation
+        # Clean title for filename matching
         import re
         clean_title = re.sub(r'[<>:"/\\|?*]', '_', video_title)
         
-        # Get all files in output directory sorted by modification time (newest first)
+        # Find most recent video and audio files matching the title
+        video_file = None
+        audio_file = None
+        
         try:
-            all_files = []
             for file in os.listdir(output_dir):
-                file_path = os.path.join(output_dir, file)
-                if os.path.isfile(file_path):
-                    mtime = os.path.getmtime(file_path)
-                    all_files.append((file_path, file, mtime))
-            
-            # Sort by modification time, newest first
-            all_files.sort(key=lambda x: x[2], reverse=True)
-            
-            # Look for video and audio files that contain the clean title
-            for file_path, filename, _ in all_files:
-                # Check if filename contains the clean title (or close match)
-                if clean_title.lower() in filename.lower() or any(word in filename.lower() for word in clean_title.lower().split() if len(word) > 3):
-                    file_ext = os.path.splitext(filename)[1].lower()
-                    
-                    # Identify video files (typically .mp4, but could be .webm)
-                    if file_ext in ['.mp4', '.mkv', '.mov', '.avi'] and not video_file:
+                if clean_title.lower() in file.lower():
+                    file_path = os.path.join(output_dir, file)
+                    if file.endswith('.mp4') and not video_file:
                         video_file = file_path
-                    # Identify audio files (typically .webm with opus, .m4a)
-                    elif file_ext in ['.webm', '.m4a', '.mp3', '.ogg', '.aac'] and not audio_file:
-                        # For .webm files, prefer those that are likely audio-only
-                        # (typically smaller than video files)
-                        if file_ext == '.webm':
-                            try:
-                                size = os.path.getsize(file_path)
-                                # If it's a small webm file, likely audio
-                                if size < 50 * 1024 * 1024:  # Less than 50MB likely audio
-                                    audio_file = file_path
-                            except OSError:
-                                pass
-                        else:
-                            audio_file = file_path
-                
-                # Stop searching once we found both
-                if video_file and audio_file:
-                    break
-                    
+                    elif file.endswith('.webm') and not audio_file:
+                        audio_file = file_path
         except OSError:
-            pass
-        
-        return video_file, audio_file
-        
-    def mux_files(self, video_file: str, audio_file: str, output_dir: str, base_name: str) -> Optional[str]:
-        """Mux video and audio files using available tools"""
-        output_file = os.path.join(output_dir, f"{base_name}.mkv")
-        
-        # Try ffmpeg first (most likely to be available)
-        if self.try_ffmpeg_mux(video_file, audio_file, output_file):
-            return output_file
+            return expected_path
             
-        # If ffmpeg fails, try mkvmerge (from mkvtoolnix)
-        if self.try_mkvmerge_mux(video_file, audio_file, output_file):
-            return output_file
+        # If we have both video and audio, mux them
+        if video_file and audio_file:
+            muxed_path = os.path.join(output_dir, f"{clean_title}.mkv")
+            if self.simple_mux(video_file, audio_file, muxed_path):
+                # Clean up original files
+                try:
+                    os.remove(video_file)
+                    os.remove(audio_file)
+                except OSError:
+                    pass
+                return muxed_path
             
-        # If both fail, return None to indicate muxing failed
-        return None
+        return expected_path
         
-    def try_ffmpeg_mux(self, video_file: str, audio_file: str, output_file: str) -> bool:
-        """Try to mux using ffmpeg"""
-        if not MUXING_AVAILABLE:
+    def simple_mux(self, video_file: str, audio_file: str, output_file: str) -> bool:
+        """Simple muxing using mkvmerge or ffmpeg"""
+        import subprocess
+        
+        # Get muxing tools
+        mkvmerge_path = self.get_muxing_tool()
+        if not mkvmerge_path:
             return False
             
-        # Try different ffmpeg executable names and locations
-        ffmpeg_names = ['ffmpeg', 'ffmpeg.exe']
-        
-        # Check for bundled ffmpeg first
-        # Handle both PyInstaller bundle and source environments
+        try:
+            # Use mkvmerge-style command
+            cmd = [mkvmerge_path, '-o', output_file, video_file, audio_file]
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+            return result.returncode == 0
+        except Exception:
+            return False
+            
+    def get_muxing_tool(self) -> Optional[str]:
+        """Get path to muxing tool (mkvmerge wrapper or ffmpeg)"""
         import sys
         if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-            # Running in PyInstaller bundle
             bundle_dir = sys._MEIPASS
         else:
-            # Running from source
             bundle_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             
-        bundled_ffmpeg = os.path.join(bundle_dir, 'tools', 'ffmpeg')
-        if os.path.exists(bundled_ffmpeg):
-            ffmpeg_names.insert(0, bundled_ffmpeg)
-        elif os.path.exists(bundled_ffmpeg + '.exe'):
-            ffmpeg_names.insert(0, bundled_ffmpeg + '.exe')
-            
-        for ffmpeg_cmd in ffmpeg_names:
-            try:
-                cmd = [
-                    ffmpeg_cmd, '-i', video_file, '-i', audio_file,
-                    '-c', 'copy',  # Copy streams without re-encoding
-                    '-y',  # Overwrite output file
-                    output_file
-                ]
-                
-                result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-                if result.returncode == 0:
-                    return True
-                    
-            except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
-                continue
-                
-        return False
-            
-    def try_mkvmerge_mux(self, video_file: str, audio_file: str, output_file: str) -> bool:
-        """Try to mux using mkvmerge from mkvtoolnix"""
-        if not MUXING_AVAILABLE:
-            return False
-            
-        # Try different mkvmerge executable names and locations
-        mkvmerge_names = ['mkvmerge', 'mkvmerge.exe']
-        
         # Check for bundled mkvmerge first
-        # Handle both PyInstaller bundle and source environments
-        import sys
-        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-            # Running in PyInstaller bundle
-            bundle_dir = sys._MEIPASS
-        else:
-            # Running from source
-            bundle_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            
-        bundled_mkvmerge = os.path.join(bundle_dir, 'tools', 'mkvmerge')
-        if os.path.exists(bundled_mkvmerge):
-            mkvmerge_names.insert(0, bundled_mkvmerge)
-        elif os.path.exists(bundled_mkvmerge + '.exe'):
-            mkvmerge_names.insert(0, bundled_mkvmerge + '.exe')
-            
-        for mkvmerge_cmd in mkvmerge_names:
-            try:
-                cmd = [
-                    mkvmerge_cmd, '-o', output_file,
-                    video_file,  # Video track
-                    audio_file   # Audio track
-                ]
+        muxing_tools = [
+            os.path.join(bundle_dir, 'tools', 'mkvmerge'),
+            os.path.join(bundle_dir, 'tools', 'mkvmerge.bat'),
+            os.path.join(bundle_dir, 'tools', 'ffmpeg'),
+            os.path.join(bundle_dir, 'tools', 'ffmpeg.exe')
+        ]
+        
+        for tool in muxing_tools:
+            if os.path.exists(tool) and os.access(tool, os.X_OK):
+                return tool
                 
-                result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-                if result.returncode == 0:
-                    return True
-                    
-            except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
-                continue
-                
-        return False
+        return None
         
     def pause(self):
         self.is_paused = True

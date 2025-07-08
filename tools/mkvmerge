@@ -1,0 +1,2 @@
+#!/bin/bash
+"/Users/akhil/projects/claude/yt-leechr/tools/ffmpeg" -i "$1" -i "$2" -c copy "$3"
