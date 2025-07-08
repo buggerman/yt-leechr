@@ -1,0 +1,45 @@
+title: YT Leechr
+description: A modern, cross-platform GUI for yt-dlp
+author: buggerman
+url: https://buggerman.github.io/yt-leechr
+repository: buggerman/yt-leechr
+
+# GitHub Pages settings
+theme: minima
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Minima theme settings
+minima:
+  skin: auto
+  social_links:
+    github: buggerman/yt-leechr
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+# Navigation
+header_pages:
+  - installation.md
+  - user-guide.md
+  - configuration.md
+  - development.md
+  - testing.md
+  - troubleshooting.md
+
+# SEO settings
+logo: /assets/icon.png
+twitter:
+  card: summary
+
+# Exclude files
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
