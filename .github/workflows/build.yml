@@ -63,7 +63,11 @@ jobs:
           unzip -q ffmpeg-windows.zip
           find . -name ffmpeg.exe -exec cp {} ./ffmpeg.exe \;
           rm -rf ffmpeg-master-latest-win64-gpl ffmpeg-windows.zip
+          # Create mkvmerge wrapper that uses ffmpeg
+          echo '@echo off' > mkvmerge.bat
+          echo '"%~dp0ffmpeg.exe" -i "%1" -i "%2" -c copy "%3"' >> mkvmerge.bat
           echo "Downloaded Windows ffmpeg: $(ls -la ffmpeg.exe)"
+          echo "Created Windows mkvmerge wrapper: $(ls -la mkvmerge.bat)"
         fi
       shell: bash
 

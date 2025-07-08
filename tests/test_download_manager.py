@@ -64,7 +64,7 @@ class TestDownloadWorker:
         opts = worker.build_ydl_options()
         
         assert 'Downloads' in opts['outtmpl']  # Should use default downloads folder
-        assert opts['format'] == 'best'
+        assert opts['format'] == 'bestvideo+bestaudio/best'
         assert opts['noplaylist'] is True  # default
         assert opts['extractaudio'] is False  # default
         assert 'writesubtitles' not in opts  # Should not be set when False

@@ -7,7 +7,7 @@
     "sources": [
         {
             "type": "file",
-            "url": "https://files.pythonhosted.org/packages/source/y/yt-dlp/yt-dlp-2024.7.7.tar.gz",
+            "url": "https://files.pythonhosted.org/packages/source/y/yt-dlp/yt_dlp-2024.12.13-py3-none-any.whl",
             "sha256": "f6b5a65a9ccd6e8c1fb5a8b5e3c5b77e5a6a0eeaa9b4b7f6a2d8e6f5c6a7b8c9"
         },
         {

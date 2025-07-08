@@ -63,10 +63,9 @@ class DownloadWorker(QThread):
                         ydl.download([self.download_item.url])
                         
                         if not self.is_cancelled:
-                            # If separate files were downloaded, mux them
+                            # Get final output path - yt-dlp handles merging
                             output_path = self.get_output_path(info)
-                            final_path = self.mux_if_needed(output_path, info)
-                            self.download_completed.emit(self.download_item.id, final_path)
+                            self.download_completed.emit(self.download_item.id, output_path)
                             
                     except Exception as e:
                         if not self.is_cancelled:
@@ -116,17 +115,21 @@ class DownloadWorker(QThread):
             if tools_dir not in current_path:
                 os.environ['PATH'] = tools_dir + os.pathsep + current_path
             
-        # For video downloads, force merging
-        if not self.settings.get('extract_audio', False) and '+' in format_selector:
+        # Force merging to MKV for all video downloads
+        if not self.settings.get('extract_audio', False):
             ydl_opts['merge_output_format'] = 'mkv'
             ydl_opts['prefer_ffmpeg'] = True
-            # Force post-processing to ensure merge happens
             ydl_opts['postprocessors'] = [{
                 'key': 'FFmpegVideoConvertor',
                 'preferedformat': 'mkv',
             }]
+            # Ensure best quality is actually selected
+            if format_selector == 'bestvideo+bestaudio/best':
+                ydl_opts['format'] = 'bestvideo[height>=720]+bestaudio/best[height>=720]'
+            elif 'best' in format_selector.lower():
+                ydl_opts['format'] = 'bestvideo+bestaudio/best'
         else:
-            # Even for single format, prefer ffmpeg if available
+            # Even for audio extraction, prefer ffmpeg if available
             if ffmpeg_path:
                 ydl_opts['prefer_ffmpeg'] = True
         
@@ -195,10 +198,9 @@ class DownloadWorker(QThread):
         output_dir = self.settings.get('output_dir', os.path.expanduser('~/Downloads'))
         template = self.settings.get('output_template', '%(title)s.%(ext)s')
         
-        # This is a simplified approach - in a real implementation,
-        # you'd want to use yt-dlp's filename generation
+        # For video downloads, expect mkv output due to merge_output_format
         title = info.get('title', 'download')
-        ext = info.get('ext', 'mp4')
+        ext = 'mkv' if not self.settings.get('extract_audio', False) else info.get('ext', 'mp4')
         
         # Clean the title for filename
         import re
@@ -244,6 +246,73 @@ class DownloadWorker(QThread):
                 return muxed_path
             
         return expected_path
+        
+    def force_mux_separate_files(self, expected_path: str, info: dict) -> str:
+        """Force mux any separate video/audio files found"""
+        output_dir = os.path.dirname(expected_path)
+        video_title = info.get('title', 'download')
+        
+        # Clean title for filename matching
+        import re
+        clean_title = re.sub(r'[<>:"/\\|?*]', '_', video_title)
+        
+        print(f"DEBUG: Looking for separate files with title: {clean_title}")
+        
+        # Find video and audio files
+        video_file = None
+        audio_file = None
+        
+        try:
+            files = os.listdir(output_dir)
+            print(f"DEBUG: Files in output dir: {files}")
+            
+            for file in files:
+                if clean_title.lower() in file.lower():
+                    print(f"DEBUG: Checking file: {file}")
+                    if '.f401.' in file or '.f137.' in file or file.endswith('.mp4'):
+                        video_file = os.path.join(output_dir, file)
+                        print(f"DEBUG: Found video file: {video_file}")
+                    elif '.f251.' in file or file.endswith('.webm'):
+                        audio_file = os.path.join(output_dir, file)
+                        print(f"DEBUG: Found audio file: {audio_file}")
+                        
+            if video_file and audio_file:
+                print(f"DEBUG: Attempting to mux {video_file} + {audio_file}")
+                output_file = os.path.join(output_dir, f"{clean_title}.mkv")
+                if self.simple_ffmpeg_mux(video_file, audio_file, output_file):
+                    print(f"DEBUG: Successfully muxed to {output_file}")
+                    # Clean up separate files
+                    try:
+                        os.remove(video_file)
+                        os.remove(audio_file)
+                    except:
+                        pass
+                    return output_file
+                        
+        except Exception as e:
+            print(f"DEBUG: Mux error: {e}")
+            
+        return expected_path
+        
+    def simple_ffmpeg_mux(self, video_file: str, audio_file: str, output_file: str) -> bool:
+        """Simple ffmpeg mux using bundled binary"""
+        ffmpeg_path = self.get_bundled_ffmpeg_path()
+        if not ffmpeg_path:
+            print("DEBUG: No ffmpeg found for muxing")
+            return False
+            
+        import subprocess
+        try:
+            cmd = [ffmpeg_path, '-i', video_file, '-i', audio_file, '-c', 'copy', '-y', output_file]
+            print(f"DEBUG: Running ffmpeg command: {' '.join(cmd)}")
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            success = result.returncode == 0
+            if not success:
+                print(f"DEBUG: ffmpeg failed: {result.stderr}")
+            return success
+        except Exception as e:
+            print(f"DEBUG: ffmpeg exception: {e}")
+            return False
         
     def simple_mux(self, video_file: str, audio_file: str, output_file: str) -> bool:
         """Simple muxing using mkvmerge or ffmpeg"""
