@@ -32,7 +32,7 @@ class TestSettingsWidget:
         # Test default values
         assert 'Downloads' in settings['output_dir']  # Should use default downloads dir
         assert settings['output_template'] == '%(title)s.%(ext)s'
-        assert settings['format'] == 'best[ext=mp4]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best'
+        assert settings['format'] == 'bestvideo+bestaudio/best'
         assert settings['extract_audio'] is False
         assert settings['audio_format'] == 'mp3'
         assert settings['audio_quality'] == '320'
@@ -84,12 +84,12 @@ class TestSettingsWidget:
         widget = SettingsWidget()
         
         format_tests = [
-            ('Best (Video + Audio)', 'best[ext=mp4]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best'),
-            ('4K (if available)', 'best[height<=2160][ext=mp4]/bestvideo[height<=2160][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=2160]+bestaudio/best[height<=2160]'),
-            ('1440p (if available)', 'best[height<=1440][ext=mp4]/bestvideo[height<=1440][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=1440]+bestaudio/best[height<=1440]'),
-            ('1080p (if available)', 'best[height<=1080][ext=mp4]/bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=1080]+bestaudio/best[height<=1080]'),
-            ('720p (if available)', 'best[height<=720][ext=mp4]/bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best[height<=720]'),
-            ('480p (if available)', 'best[height<=480][ext=mp4]/bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=480]+bestaudio/best[height<=480]'),
+            ('Best (Video + Audio)', 'bestvideo+bestaudio/best'),
+            ('4K (if available)', 'bestvideo[height<=2160]+bestaudio/best[height<=2160]'),
+            ('1440p (if available)', 'bestvideo[height<=1440]+bestaudio/best[height<=1440]'),
+            ('1080p (if available)', 'bestvideo[height<=1080]+bestaudio/best[height<=1080]'),
+            ('720p (if available)', 'bestvideo[height<=720]+bestaudio/best[height<=720]'),
+            ('480p (if available)', 'bestvideo[height<=480]+bestaudio/best[height<=480]'),
             ('Best Video Only', 'bestvideo'),
             ('Best Audio Only', 'bestaudio'),
             ('Worst (Smallest File)', 'worst'),
@@ -111,10 +111,10 @@ class TestSettingsWidget:
         settings = widget.get_settings()
         assert settings['format'] == 'best[height<=720]'
         
-        # Test custom format with empty input (should default to smart format selector)
+        # Test custom format with empty input (should default to bestvideo+bestaudio/best)
         widget.custom_format_edit.setText('')
         settings = widget.get_settings()
-        assert settings['format'] == 'best[ext=mp4]/bestvideo+bestaudio/best'
+        assert settings['format'] == 'bestvideo+bestaudio/best'
         
     def test_on_format_changed(self, qt_app):
         """Test format change handler"""

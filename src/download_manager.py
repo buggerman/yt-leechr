@@ -80,19 +80,16 @@ class DownloadWorker(QThread):
             'audioformat': self.settings.get('audio_format', 'mp3'),
             'audioquality': self.settings.get('audio_quality', '192'),
             'prefer_ffmpeg': True,  # Use ffmpeg for better quality merging
-            'merge_output_format': 'mp4',  # Always merge to mp4 when separate streams
-            'postprocessors': [],  # Initialize empty postprocessors list
         }
         
-        # Force merge for video+audio downloads (not audio-only)
-        if not self.settings.get('extract_audio', False):
-            # Add FFmpeg video converter to ensure proper container
-            ydl_opts['postprocessors'].append({
-                'key': 'FFmpegVideoConvertor',
-                'preferedformat': 'mp4',
-            })
-            # Force keep single file, remove intermediates
-            ydl_opts['keepvideo'] = False
+        # Configure muxing for video+audio downloads (not audio-only)
+        if not self.settings.get('extract_audio', False) and '+' in format_selector:
+            # Download best separate streams and mux to MKV (universal container)
+            ydl_opts['merge_output_format'] = 'mkv'  # MKV supports all codecs
+            ydl_opts['keepvideo'] = False  # Remove intermediate files after muxing
+        elif not self.settings.get('extract_audio', False):
+            # For single format downloads, prefer mp4 container
+            ydl_opts['merge_output_format'] = 'mp4'
         
         # Add subtitle options
         if self.settings.get('download_subtitles', False):
