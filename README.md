@@ -29,6 +29,7 @@ YT Leechr provides an intuitive interface for downloading videos and audio from 
 - **📥 [Download for Windows](https://github.com/buggerman/yt-leechr/releases/latest)** - Standalone `.exe` executable
 - **📥 [Download for macOS](https://github.com/buggerman/yt-leechr/releases/latest)** - Native `.app` bundle
 - **📥 [Download for Linux](https://github.com/buggerman/yt-leechr/releases/latest)** - Portable executable
+- **📦 [Install via Flatpak](#flatpak)** - Universal Linux package with sandboxing
 
 *No installation required! Just download and run.*
 
@@ -88,6 +89,36 @@ brew install ffmpeg
 sudo apt update
 sudo apt install ffmpeg
 ```
+
+### Flatpak
+
+YT Leechr is available as a Flatpak for universal Linux distribution support with enhanced security through sandboxing.
+
+**Install from Flathub (Coming Soon):**
+```bash
+flatpak install flathub com.github.buggerman.yt-leechr
+```
+
+**Build from Source:**
+```bash
+# Install flatpak-builder
+sudo apt install flatpak flatpak-builder  # Ubuntu/Debian
+sudo dnf install flatpak flatpak-builder  # Fedora
+
+# Add Flathub repository
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
+# Build and install
+./build-flatpak.sh
+```
+
+**Features:**
+- 🔒 **Sandboxed Security**: Runs in isolated environment with limited system access
+- 🎯 **Minimal Permissions**: Only accesses Downloads, Videos, and Music directories
+- 🌐 **Universal**: Works on any Linux distribution with Flatpak support
+- 🔄 **Auto-Updates**: Seamless updates through Flatpak system
+
+For detailed Flatpak instructions, see [FLATPAK.md](FLATPAK.md).
 
 ## Usage
 

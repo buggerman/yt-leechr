@@ -1,0 +1,53 @@
+name: Build Flatpak
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  flatpak:
+    runs-on: ubuntu-latest
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:kde-6.7
+      options: --privileged
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Generate Python dependencies
+      run: |
+        python3 -m pip install --user flatpak-pip-generator
+        export PATH="$HOME/.local/bin:$PATH"
+        flatpak-pip-generator --output python3-yt-dlp yt-dlp
+        flatpak-pip-generator --output python3-requests requests
+    
+    - name: Build Flatpak
+      uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v6
+      with:
+        bundle: yt-leechr.flatpak
+        manifest-path: com.github.buggerman.yt-leechr.json
+        cache-key: flatpak-builder-${{ github.sha }}
+    
+    - name: Upload Flatpak artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: YT-Leechr-flatpak
+        path: yt-leechr.flatpak
+        retention-days: 30
+    
+    - name: Upload to Release
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: yt-leechr.flatpak
+        draft: true
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
