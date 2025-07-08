@@ -5,7 +5,10 @@ Download manager handling yt-dlp integration
 import os
 import threading
 import queue
-from typing import Dict, Any, Optional
+import subprocess
+import glob
+import shutil
+from typing import Dict, Any, Optional, List
 from PyQt6.QtCore import QObject, pyqtSignal, QThread, QTimer
 import yt_dlp
 from .download_item import DownloadItem, DownloadStatus
@@ -53,9 +56,10 @@ class DownloadWorker(QThread):
                         ydl.download([self.download_item.url])
                         
                         if not self.is_cancelled:
-                            # Find the downloaded file
+                            # Find the downloaded file(s) and handle muxing if needed
                             output_path = self.get_output_path(info)
-                            self.download_completed.emit(self.download_item.id, output_path)
+                            final_path = self.handle_post_download_muxing(output_path, info)
+                            self.download_completed.emit(self.download_item.id, final_path)
                             
                     except Exception as e:
                         if not self.is_cancelled:
@@ -79,17 +83,18 @@ class DownloadWorker(QThread):
             'extractaudio': self.settings.get('extract_audio', False),
             'audioformat': self.settings.get('audio_format', 'mp3'),
             'audioquality': self.settings.get('audio_quality', '192'),
-            'prefer_ffmpeg': True,  # Use ffmpeg for better quality merging
         }
         
-        # Configure muxing for video+audio downloads (not audio-only)
+        # For video+audio downloads, let yt-dlp download separate files
+        # We'll handle muxing ourselves in post-processing
         if not self.settings.get('extract_audio', False) and '+' in format_selector:
-            # Download best separate streams and mux to MKV (universal container)
-            ydl_opts['merge_output_format'] = 'mkv'  # MKV supports all codecs
-            ydl_opts['keepvideo'] = False  # Remove intermediate files after muxing
-        elif not self.settings.get('extract_audio', False):
-            # For single format downloads, prefer mp4 container
-            ydl_opts['merge_output_format'] = 'mp4'
+            # Don't merge - we'll handle it ourselves
+            ydl_opts['keepvideo'] = True  # Keep both video and audio files
+            # Remove any automatic merging to ensure we get separate files
+            ydl_opts['postprocessors'] = []
+        else:
+            # For single format downloads, let yt-dlp handle normally
+            ydl_opts['prefer_ffmpeg'] = True
         
         # Add subtitle options
         if self.settings.get('download_subtitles', False):
@@ -145,6 +150,98 @@ class DownloadWorker(QThread):
         filename = f"{clean_title}.{ext}"
         
         return os.path.join(output_dir, filename)
+        
+    def handle_post_download_muxing(self, expected_path: str, info: dict) -> str:
+        """Handle muxing of separate video/audio files after download"""
+        output_dir = os.path.dirname(expected_path)
+        base_name = os.path.splitext(os.path.basename(expected_path))[0]
+        
+        # Look for separate video and audio files
+        video_file, audio_file = self.find_separate_files(output_dir, base_name)
+        
+        if video_file and audio_file:
+            # We have separate files - need to mux them
+            muxed_file = self.mux_files(video_file, audio_file, output_dir, base_name)
+            if muxed_file:
+                # Clean up separate files after successful muxing
+                try:
+                    os.remove(video_file)
+                    os.remove(audio_file)
+                except OSError:
+                    pass  # Ignore cleanup errors
+                return muxed_file
+        
+        # No separate files found or muxing failed, return expected path
+        return expected_path
+        
+    def find_separate_files(self, output_dir: str, base_name: str) -> tuple[Optional[str], Optional[str]]:
+        """Find separate video and audio files in the output directory"""
+        video_file = None
+        audio_file = None
+        
+        # Common video extensions
+        video_exts = ['.mp4', '.webm', '.mkv', '.mov', '.avi']
+        # Common audio extensions
+        audio_exts = ['.webm', '.m4a', '.mp3', '.ogg', '.aac']
+        
+        # Look for files with the base name
+        for file in os.listdir(output_dir):
+            if file.startswith(base_name):
+                file_path = os.path.join(output_dir, file)
+                file_ext = os.path.splitext(file)[1].lower()
+                
+                if file_ext in video_exts and not video_file:
+                    video_file = file_path
+                elif file_ext in audio_exts and not audio_file:
+                    audio_file = file_path
+        
+        return video_file, audio_file
+        
+    def mux_files(self, video_file: str, audio_file: str, output_dir: str, base_name: str) -> Optional[str]:
+        """Mux video and audio files using available tools"""
+        output_file = os.path.join(output_dir, f"{base_name}.mkv")
+        
+        # Try ffmpeg first (most likely to be available)
+        if self.try_ffmpeg_mux(video_file, audio_file, output_file):
+            return output_file
+            
+        # If ffmpeg fails, try mkvmerge (from mkvtoolnix)
+        if self.try_mkvmerge_mux(video_file, audio_file, output_file):
+            return output_file
+            
+        # If both fail, return None to indicate muxing failed
+        return None
+        
+    def try_ffmpeg_mux(self, video_file: str, audio_file: str, output_file: str) -> bool:
+        """Try to mux using ffmpeg"""
+        try:
+            cmd = [
+                'ffmpeg', '-i', video_file, '-i', audio_file,
+                '-c', 'copy',  # Copy streams without re-encoding
+                '-y',  # Overwrite output file
+                output_file
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+            return result.returncode == 0
+            
+        except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+            return False
+            
+    def try_mkvmerge_mux(self, video_file: str, audio_file: str, output_file: str) -> bool:
+        """Try to mux using mkvmerge from mkvtoolnix"""
+        try:
+            cmd = [
+                'mkvmerge', '-o', output_file,
+                video_file,  # Video track
+                audio_file   # Audio track
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+            return result.returncode == 0
+            
+        except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+            return False
         
     def pause(self):
         self.is_paused = True
