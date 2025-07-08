@@ -24,6 +24,7 @@ class DownloadWorker(QThread):
     info_extracted = pyqtSignal(str, str, str)
     download_completed = pyqtSignal(str, str)
     download_error = pyqtSignal(str, str)
+    muxing_status = pyqtSignal(str, str)  # download_id, status message
     
     def __init__(self, download_item: DownloadItem, settings: Dict[str, Any]):
         super().__init__()
@@ -163,50 +164,96 @@ class DownloadWorker(QThread):
             return expected_path
             
         output_dir = os.path.dirname(expected_path)
-        base_name = os.path.splitext(os.path.basename(expected_path))[0]
         
-        # Look for separate video and audio files
-        video_file, audio_file = self.find_separate_files(output_dir, base_name)
+        # Look for separate video and audio files using video title
+        video_title = info.get('title', 'download')
+        self.muxing_status.emit(self.download_item.id, "🔍 Checking for separate video/audio files...")
+        video_file, audio_file = self.find_separate_files(output_dir, video_title)
         
         if video_file and audio_file:
             # We have separate files - need to mux them
+            self.muxing_status.emit(self.download_item.id, f"📁 Found video: {os.path.basename(video_file)}")
+            self.muxing_status.emit(self.download_item.id, f"🎵 Found audio: {os.path.basename(audio_file)}")
+            
+            base_name = os.path.splitext(os.path.basename(video_file))[0]
+            # Remove common yt-dlp suffixes like .f137 from the base name
+            import re
+            base_name = re.sub(r'\.\w+$', '', base_name)
+            
+            self.muxing_status.emit(self.download_item.id, "🔧 Muxing video and audio files...")
             muxed_file = self.mux_files(video_file, audio_file, output_dir, base_name)
             if muxed_file:
                 # Clean up separate files after successful muxing
                 try:
                     os.remove(video_file)
                     os.remove(audio_file)
+                    self.muxing_status.emit(self.download_item.id, f"✅ Successfully muxed to: {os.path.basename(muxed_file)}")
                 except OSError:
                     pass  # Ignore cleanup errors
                 return muxed_file
             else:
                 # Muxing failed - emit a warning but continue with separate files
-                print(f"Warning: Could not mux separate files. You have: {video_file} and {audio_file}")
-                print("Consider installing ffmpeg or mkvtoolnix for automatic file merging.")
+                self.muxing_status.emit(self.download_item.id, f"⚠️ Muxing failed - keeping separate files")
+                self.muxing_status.emit(self.download_item.id, f"📹 Video: {os.path.basename(video_file)}")
+                self.muxing_status.emit(self.download_item.id, f"🎵 Audio: {os.path.basename(audio_file)}")
+                return video_file  # Return video file as primary
+        else:
+            self.muxing_status.emit(self.download_item.id, "ℹ️ Single file download - no muxing needed")
         
-        # No separate files found or muxing failed, return expected path
+        # No separate files found, return expected path
         return expected_path
         
-    def find_separate_files(self, output_dir: str, base_name: str) -> Tuple[Optional[str], Optional[str]]:
-        """Find separate video and audio files in the output directory"""
+    def find_separate_files(self, output_dir: str, video_title: str) -> Tuple[Optional[str], Optional[str]]:
+        """Find separate video and audio files in the output directory based on video title"""
         video_file = None
         audio_file = None
         
-        # Common video extensions
-        video_exts = ['.mp4', '.webm', '.mkv', '.mov', '.avi']
-        # Common audio extensions
-        audio_exts = ['.webm', '.m4a', '.mp3', '.ogg', '.aac']
+        # Clean the title like yt-dlp does for filename generation
+        import re
+        clean_title = re.sub(r'[<>:"/\\|?*]', '_', video_title)
         
-        # Look for files with the base name
-        for file in os.listdir(output_dir):
-            if file.startswith(base_name):
+        # Get all files in output directory sorted by modification time (newest first)
+        try:
+            all_files = []
+            for file in os.listdir(output_dir):
                 file_path = os.path.join(output_dir, file)
-                file_ext = os.path.splitext(file)[1].lower()
+                if os.path.isfile(file_path):
+                    mtime = os.path.getmtime(file_path)
+                    all_files.append((file_path, file, mtime))
+            
+            # Sort by modification time, newest first
+            all_files.sort(key=lambda x: x[2], reverse=True)
+            
+            # Look for video and audio files that contain the clean title
+            for file_path, filename, _ in all_files:
+                # Check if filename contains the clean title (or close match)
+                if clean_title.lower() in filename.lower() or any(word in filename.lower() for word in clean_title.lower().split() if len(word) > 3):
+                    file_ext = os.path.splitext(filename)[1].lower()
+                    
+                    # Identify video files (typically .mp4, but could be .webm)
+                    if file_ext in ['.mp4', '.mkv', '.mov', '.avi'] and not video_file:
+                        video_file = file_path
+                    # Identify audio files (typically .webm with opus, .m4a)
+                    elif file_ext in ['.webm', '.m4a', '.mp3', '.ogg', '.aac'] and not audio_file:
+                        # For .webm files, prefer those that are likely audio-only
+                        # (typically smaller than video files)
+                        if file_ext == '.webm':
+                            try:
+                                size = os.path.getsize(file_path)
+                                # If it's a small webm file, likely audio
+                                if size < 50 * 1024 * 1024:  # Less than 50MB likely audio
+                                    audio_file = file_path
+                            except OSError:
+                                pass
+                        else:
+                            audio_file = file_path
                 
-                if file_ext in video_exts and not video_file:
-                    video_file = file_path
-                elif file_ext in audio_exts and not audio_file:
-                    audio_file = file_path
+                # Stop searching once we found both
+                if video_file and audio_file:
+                    break
+                    
+        except OSError:
+            pass
         
         return video_file, audio_file
         
