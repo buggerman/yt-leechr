@@ -26,7 +26,7 @@ def get_platform_name():
 
 def clean_build():
     """Clean previous build artifacts"""
-    print("🧹 Cleaning previous builds...")
+    print("Cleaning previous builds...")
     
     dirs_to_clean = ['build', 'dist', '__pycache__']
     for dir_name in dirs_to_clean:
@@ -42,7 +42,7 @@ def clean_build():
 
 def build_executable():
     """Build standalone executable with PyInstaller"""
-    print("🔨 Building standalone executable...")
+    print("Building standalone executable...")
     
     platform_name = get_platform_name()
     
@@ -79,10 +79,10 @@ def build_executable():
     
     try:
         result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-        print("   ✅ Build successful!")
+        print("    Build successful!")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"   ❌ Build failed: {e}")
+        print(f"    Build failed: {e}")
         print(f"   stdout: {e.stdout}")
         print(f"   stderr: {e.stderr}")
         return False
@@ -92,7 +92,7 @@ def create_app_bundle_macos():
     if platform.system() != 'Darwin':
         return
         
-    print("🍎 Creating macOS app bundle...")
+    print(" Creating macOS app bundle...")
     
     app_name = "YT Leechr.app"
     app_path = f"dist/{app_name}"
@@ -142,11 +142,11 @@ def create_app_bundle_macos():
     with open(f"{app_path}/Contents/Info.plist", 'w') as f:
         f.write(info_plist)
     
-    print(f"   ✅ Created {app_name}")
+    print(f"    Created {app_name}")
 
 def create_portable_package():
     """Create portable package with all dependencies"""
-    print("📦 Creating portable package...")
+    print(" Creating portable package...")
     
     platform_name = get_platform_name()
     package_name = f"YT-Leechr-{platform_name}-portable"
@@ -194,14 +194,14 @@ def create_portable_package():
     archive_name = f"dist/{package_name}"
     if platform.system() == 'Windows':
         shutil.make_archive(archive_name, 'zip', 'dist', package_name)
-        print(f"   ✅ Created {package_name}.zip")
+        print(f"    Created {package_name}.zip")
     else:
         shutil.make_archive(archive_name, 'gztar', 'dist', package_name)
-        print(f"   ✅ Created {package_name}.tar.gz")
+        print(f"    Created {package_name}.tar.gz")
 
 def main():
     """Main build process"""
-    print("🚀 YT Leechr Build Script")
+    print("YT Leechr Build Script")
     print(f"   Platform: {get_platform_name()}")
     print()
     
@@ -209,7 +209,7 @@ def main():
     try:
         subprocess.run(['pyinstaller', '--version'], check=True, capture_output=True)
     except (subprocess.CalledProcessError, FileNotFoundError):
-        print("❌ PyInstaller not found. Install with: pip install pyinstaller")
+        print("PyInstaller not found. Install with: pip install pyinstaller")
         return 1
     
     # Build process
@@ -224,7 +224,7 @@ def main():
     create_portable_package()
     
     print()
-    print("✅ Build completed successfully!")
+    print("Build completed successfully!")
     print(f"   Check the dist/ directory for your builds")
     
     return 0
