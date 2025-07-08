@@ -1,0 +1,127 @@
+---
+---
+
+@import "minima";
+
+.center {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.badges {
+  margin: 15px 0;
+  
+  img {
+    margin: 2px 3px;
+    display: inline-block;
+  }
+}
+
+.post-content {
+  h1, h2, h3, h4, h5, h6 {
+    margin-top: 30px;
+    margin-bottom: 15px;
+  }
+  
+  h1 {
+    font-size: 2.5em;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  h2 {
+    font-size: 2em;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+  }
+  
+  h3 {
+    font-size: 1.5em;
+  }
+  
+  ul, ol {
+    margin-bottom: 15px;
+    
+    li {
+      margin-bottom: 5px;
+    }
+  }
+  
+  code {
+    background-color: #f5f5f5;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 0.9em;
+  }
+  
+  pre {
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 5px;
+    overflow-x: auto;
+    
+    code {
+      background-color: transparent;
+      padding: 0;
+    }
+  }
+  
+  blockquote {
+    border-left: 4px solid #ddd;
+    padding-left: 20px;
+    margin: 20px 0;
+    font-style: italic;
+    color: #666;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+  }
+}
+
+.site-header {
+  border-bottom: 1px solid #e8e8e8;
+  min-height: 56px;
+  position: relative;
+}
+
+.site-footer {
+  border-top: 1px solid #e8e8e8;
+  padding: 30px 0;
+  margin-top: 40px;
+  text-align: center;
+  color: #666;
+  font-size: 0.9em;
+}
+
+// Responsive design
+@media screen and (max-width: 600px) {
+  .badges img {
+    margin: 2px 1px;
+  }
+  
+  .post-content h1 {
+    font-size: 2em;
+  }
+  
+  .post-content h2 {
+    font-size: 1.7em;
+  }
+  
+  .post-content h3 {
+    font-size: 1.3em;
+  }
+}

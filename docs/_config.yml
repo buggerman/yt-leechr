@@ -11,6 +11,14 @@ plugins:
   - jekyll-sitemap
   - jekyll-seo-tag
 
+# GitHub Pages specific settings
+github: [metadata]
+safe: true
+incremental: false
+highlighter: rouge
+gist:
+  noscript: false
+
 # Minima theme settings
 minima:
   skin: auto
@@ -37,6 +45,11 @@ header_pages:
 logo: /assets/icon.png
 twitter:
   card: summary
+
+# Custom CSS
+sass:
+  sass_dir: assets/css
+  style: compressed
 
 # Exclude files
 exclude:

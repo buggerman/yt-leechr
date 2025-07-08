@@ -6,16 +6,20 @@ description: A modern, cross-platform graphical user interface for yt-dlp with a
 
 # YT Leechr
 
-<div align="center">
+<div class="center">
   <img src="assets/icon.png" alt="YT Leechr Logo" width="128" height="128">
-  
-  **A modern, cross-platform graphical user interface for [yt-dlp](https://github.com/yt-dlp/yt-dlp)**
+</div>
 
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-  [![PyQt6](https://img.shields.io/badge/GUI-PyQt6-green.svg)](https://pypi.org/project/PyQt6/)
-  [![Tests](https://img.shields.io/badge/tests-68%20passed-brightgreen.svg)](testing)
-  [![GitHub release](https://img.shields.io/github/v/release/buggerman/yt-leechr.svg)](https://github.com/buggerman/yt-leechr/releases)
+<div class="center">
+  <strong>A modern, cross-platform graphical user interface for <a href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a></strong>
+</div>
+
+<div class="center badges">
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.8+-blue.svg" alt="Python 3.8+"></a>
+  <a href="https://pypi.org/project/PyQt6/"><img src="https://img.shields.io/badge/GUI-PyQt6-green.svg" alt="PyQt6"></a>
+  <a href="testing"><img src="https://img.shields.io/badge/tests-68%20passed-brightgreen.svg" alt="Tests"></a>
+  <a href="https://github.com/buggerman/yt-leechr/releases"><img src="https://img.shields.io/github/v/release/buggerman/yt-leechr.svg" alt="GitHub release"></a>
 </div>
 
 ---
