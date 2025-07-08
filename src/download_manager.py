@@ -179,6 +179,10 @@ class DownloadWorker(QThread):
                 except OSError:
                     pass  # Ignore cleanup errors
                 return muxed_file
+            else:
+                # Muxing failed - emit a warning but continue with separate files
+                print(f"Warning: Could not mux separate files. You have: {video_file} and {audio_file}")
+                print("Consider installing ffmpeg or mkvtoolnix for automatic file merging.")
         
         # No separate files found or muxing failed, return expected path
         return expected_path
@@ -226,37 +230,67 @@ class DownloadWorker(QThread):
         if not MUXING_AVAILABLE:
             return False
             
-        try:
-            cmd = [
-                'ffmpeg', '-i', video_file, '-i', audio_file,
-                '-c', 'copy',  # Copy streams without re-encoding
-                '-y',  # Overwrite output file
-                output_file
-            ]
+        # Try different ffmpeg executable names and locations
+        ffmpeg_names = ['ffmpeg', 'ffmpeg.exe']
+        
+        # Check for bundled ffmpeg first
+        bundle_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        bundled_ffmpeg = os.path.join(bundle_dir, 'tools', 'ffmpeg')
+        if os.path.exists(bundled_ffmpeg):
+            ffmpeg_names.insert(0, bundled_ffmpeg)
+        elif os.path.exists(bundled_ffmpeg + '.exe'):
+            ffmpeg_names.insert(0, bundled_ffmpeg + '.exe')
             
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-            return result.returncode == 0
-            
-        except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
-            return False
+        for ffmpeg_cmd in ffmpeg_names:
+            try:
+                cmd = [
+                    ffmpeg_cmd, '-i', video_file, '-i', audio_file,
+                    '-c', 'copy',  # Copy streams without re-encoding
+                    '-y',  # Overwrite output file
+                    output_file
+                ]
+                
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+                if result.returncode == 0:
+                    return True
+                    
+            except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+                continue
+                
+        return False
             
     def try_mkvmerge_mux(self, video_file: str, audio_file: str, output_file: str) -> bool:
         """Try to mux using mkvmerge from mkvtoolnix"""
         if not MUXING_AVAILABLE:
             return False
             
-        try:
-            cmd = [
-                'mkvmerge', '-o', output_file,
-                video_file,  # Video track
-                audio_file   # Audio track
-            ]
+        # Try different mkvmerge executable names and locations
+        mkvmerge_names = ['mkvmerge', 'mkvmerge.exe']
+        
+        # Check for bundled mkvmerge first
+        bundle_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        bundled_mkvmerge = os.path.join(bundle_dir, 'tools', 'mkvmerge')
+        if os.path.exists(bundled_mkvmerge):
+            mkvmerge_names.insert(0, bundled_mkvmerge)
+        elif os.path.exists(bundled_mkvmerge + '.exe'):
+            mkvmerge_names.insert(0, bundled_mkvmerge + '.exe')
             
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-            return result.returncode == 0
-            
-        except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
-            return False
+        for mkvmerge_cmd in mkvmerge_names:
+            try:
+                cmd = [
+                    mkvmerge_cmd, '-o', output_file,
+                    video_file,  # Video track
+                    audio_file   # Audio track
+                ]
+                
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+                if result.returncode == 0:
+                    return True
+                    
+            except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+                continue
+                
+        return False
         
     def pause(self):
         self.is_paused = True
