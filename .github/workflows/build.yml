@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - 'v*'
+    branches:
+      - 'dev'
   workflow_dispatch:
 
 permissions:
@@ -44,6 +46,30 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pyinstaller
+
+    - name: Setup platform-specific ffmpeg
+      run: |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          cd tools
+          curl -L "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz" -o ffmpeg-linux.tar.xz
+          tar -xf ffmpeg-linux.tar.xz
+          find . -name ffmpeg -type f -executable -exec cp {} ./ffmpeg \;
+          rm -rf ffmpeg-master-latest-linux64-gpl ffmpeg-linux.tar.xz
+          chmod +x ffmpeg
+          echo "Downloaded Linux ffmpeg: $(ls -la ffmpeg)"
+        elif [ "$RUNNER_OS" == "Windows" ]; then
+          cd tools
+          curl -L "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip" -o ffmpeg-windows.zip
+          unzip -q ffmpeg-windows.zip
+          find . -name ffmpeg.exe -exec cp {} ./ffmpeg.exe \;
+          rm -rf ffmpeg-master-latest-win64-gpl ffmpeg-windows.zip
+          # Create mkvmerge wrapper that uses ffmpeg
+          echo '@echo off' > mkvmerge.bat
+          echo '"%~dp0ffmpeg.exe" -i "%1" -i "%2" -c copy "%3"' >> mkvmerge.bat
+          echo "Downloaded Windows ffmpeg: $(ls -la ffmpeg.exe)"
+          echo "Created Windows mkvmerge wrapper: $(ls -la mkvmerge.bat)"
+        fi
+      shell: bash
 
     - name: Build executable
       run: |

@@ -1,0 +1,12 @@
+FFmpeg License Information
+
+This application bundles FFmpeg, which is licensed under the GPL v3.
+
+FFmpeg is free software; you can redistribute it and/or modify it under the 
+terms of the GNU General Public License as published by the Free Software 
+Foundation; either version 3 of the License, or (at your option) any later version.
+
+Source code for FFmpeg is available at: https://github.com/FFmpeg/FFmpeg
+Pre-compiled builds from: https://github.com/BtbN/FFmpeg-Builds
+
+For complete license text, see: https://www.gnu.org/licenses/gpl-3.0.html

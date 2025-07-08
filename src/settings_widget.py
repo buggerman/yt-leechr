@@ -103,6 +103,11 @@ class SettingsWidget(QWidget):
         self.format_combo = QComboBox()
         self.format_combo.addItems([
             "Best (Video + Audio)",
+            "4K (if available)",
+            "1440p (if available)",
+            "1080p (if available)",
+            "720p (if available)", 
+            "480p (if available)",
             "Best Video Only",
             "Best Audio Only",
             "Worst (Smallest File)",
@@ -112,7 +117,7 @@ class SettingsWidget(QWidget):
         
         # Custom format input
         self.custom_format_edit = QLineEdit()
-        self.custom_format_edit.setPlaceholderText("e.g., best[height<=720]")
+        self.custom_format_edit.setPlaceholderText("e.g., bestvideo[height<=1080]+bestaudio/best")
         self.custom_format_edit.setEnabled(False)
         format_layout.addWidget(self.custom_format_edit)
         
@@ -231,11 +236,16 @@ class SettingsWidget(QWidget):
             
     def get_settings(self) -> Dict[str, Any]:
         format_map = {
-            "Best (Video + Audio)": "best",
+            "Best (Video + Audio)": "bestvideo+bestaudio/best",
+            "4K (if available)": "bestvideo[height<=2160]+bestaudio/best[height<=2160]",
+            "1440p (if available)": "bestvideo[height<=1440]+bestaudio/best[height<=1440]",
+            "1080p (if available)": "bestvideo[height<=1080]+bestaudio/best[height<=1080]",
+            "720p (if available)": "bestvideo[height<=720]+bestaudio/best[height<=720]",
+            "480p (if available)": "bestvideo[height<=480]+bestaudio/best[height<=480]",
             "Best Video Only": "bestvideo",
             "Best Audio Only": "bestaudio",
             "Worst (Smallest File)": "worst",
-            "Custom Format": self.custom_format_edit.text() or "best"
+            "Custom Format": self.custom_format_edit.text() or "bestvideo+bestaudio/best"
         }
         
         return {

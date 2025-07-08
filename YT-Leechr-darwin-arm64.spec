@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('src', 'src')]
+datas = [('src', 'src'), ('tools', 'tools')]
 binaries = []
 hiddenimports = ['PyQt6.QtCore', 'PyQt6.QtGui', 'PyQt6.QtWidgets', 'yt_dlp']
 tmp_ret = collect_all('yt_dlp')

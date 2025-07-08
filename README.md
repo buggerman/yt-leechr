@@ -173,13 +173,42 @@ YT Leechr supports the same sites as yt-dlp, including:
 - `Enter`: Add current URL to download queue
 - `Delete`: Remove selected downloads from queue
 
-## Troubleshooting
+## Known Issues & Platform Caveats
 
-### Common Issues
+### Current Platform Issues
+
+**Flatpak (Linux)**
+- Quality selection may default to 360p instead of best available quality
+- Working on resolution in next update
+
+**Windows Executable**  
+- Video/audio files may download separately instead of merged MKV
+- Manual merge using bundled tools may be required
+
+**Working Platforms**
+- ✅ macOS: Full functionality with automatic MKV merging
+- ✅ Linux Standalone: Complete feature support
+
+### Troubleshooting
+
+#### Common Issues
 
 1. **FFmpeg not found**: Install FFmpeg and ensure it's in your system PATH
 2. **Download errors**: Check if the URL is valid and the video is accessible
 3. **Slow downloads**: Try reducing concurrent downloads in Advanced settings
+4. **Separate audio/video files**: Use external tools like FFmpeg to merge manually
+
+#### Platform-Specific Solutions
+
+**Windows - Manual File Merging:**
+```bash
+# If you get separate MP4 (video) and WebM (audio) files:
+ffmpeg -i video.mp4 -i audio.webm -c copy output.mkv
+```
+
+**Flatpak - Quality Issues:**
+- Try using "Custom format" with: `bestvideo[height>=720]+bestaudio/best`
+- Or specify exact quality: `best[height<=1080]`
 
 ### Log Files
 
@@ -291,11 +320,86 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
+## Open Source Acknowledgments
 
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) - The powerful video downloader that powers this GUI
-- [PyQt6](https://pypi.org/project/PyQt6/) - The GUI framework
-- [FFmpeg](https://ffmpeg.org/) - Video and audio processing
+This project builds upon the incredible work of many open source communities. We are grateful to all contributors and maintainers of these projects:
+
+### Core Dependencies
+
+**[yt-dlp](https://github.com/yt-dlp/yt-dlp)** - *Public Domain / Unlicense*
+- The powerful, feature-rich video downloader that powers this application
+- Supports 1000+ websites with active community development
+- Special thanks to the yt-dlp development team for their continuous improvements
+
+**[PyQt6](https://pypi.org/project/PyQt6/)** - *GPL v3 / Commercial License*
+- Modern, cross-platform GUI framework by Riverbank Computing
+- Enables native desktop applications with professional appearance
+- Built on Qt6 framework by The Qt Company
+
+**[FFmpeg](https://ffmpeg.org/)** - *GNU Lesser General Public License (LGPL) v2.1+*
+- Industry-standard multimedia framework for video/audio processing
+- Handles format conversion, encoding, and container manipulation
+- Essential for merging video and audio streams
+
+### Development & Build Tools
+
+**[PyInstaller](https://pyinstaller.org/)** - *GPL v2 with exceptions*
+- Creates standalone executables from Python applications
+- Enables distribution without Python installation requirements
+
+**[pytest](https://pytest.org/)** - *MIT License*
+- Testing framework enabling comprehensive test suite (68+ tests)
+- plugins: pytest-qt, pytest-mock, pytest-asyncio
+
+**[GitHub Actions](https://github.com/features/actions)** - *GitHub Terms of Service*
+- Automated CI/CD pipeline for multi-platform building and testing
+- Cross-platform testing on Ubuntu, Windows, and macOS
+
+### Linux Distribution
+
+**[Flatpak](https://flatpak.org/)** - *GNU Lesser General Public License v2.1+*
+- Universal Linux application packaging and sandboxing system
+- Enables secure distribution across Linux distributions
+
+**[Flathub](https://flathub.org/)** - *Various open source licenses*
+- Central repository for Flatpak applications
+- Community-driven app store for Linux
+
+**[KDE Platform](https://kde.org/)** - *Various open source licenses*
+- Runtime environment providing Qt6 and system integration
+- Foundation for professional Linux desktop applications
+
+### Python Ecosystem
+
+**[setuptools](https://setuptools.pypa.io/)** - *MIT License*
+- Python packaging and distribution tools
+
+**[pip](https://pip.pypa.io/)** - *MIT License*  
+- Python package installer and dependency management
+
+### Icon & Asset Resources
+
+**Application Icons**: Custom designed for YT Leechr
+- SVG icons for scalable, crisp display across all platforms
+- PNG variants for compatibility and performance
+
+### Special Thanks
+
+**Qt Project** - For the robust, mature GUI framework that enables native cross-platform applications
+
+**Python Software Foundation** - For the Python programming language and ecosystem
+
+**Open Source Community** - For creating, maintaining, and improving these essential tools that make projects like YT Leechr possible
+
+### License Compliance
+
+This project respects and complies with all upstream licenses:
+- YT Leechr is released under MIT License for maximum compatibility
+- FFmpeg binaries are distributed under GPL v3 (auto-downloaded builds)
+- PyQt6 usage complies with GPL v3 license terms
+- All dependencies maintain their original license requirements
+
+For detailed license information, see individual component documentation and the [LICENSE](LICENSE) file.
 
 ## Support
 

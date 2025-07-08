@@ -61,6 +61,17 @@ def build_executable():
         'main.py'
     ]
     
+    # Add tools directory if it exists and contains files
+    tools_dir = Path('tools')
+    if tools_dir.exists():
+        # Check for muxing tools
+        tool_files = list(tools_dir.glob('ffmpeg*')) + list(tools_dir.glob('mkvmerge*'))
+        if tool_files:
+            separator = ';' if platform.system() == 'Windows' else ':'
+            cmd.insert(-1, '--add-data')
+            cmd.insert(-1, f'tools{separator}tools')
+            print(f"   Found bundled tools: {[f.name for f in tool_files]}")
+    
     # Add platform-specific icon
     if platform.system() == 'Darwin':
         if os.path.exists('assets/icon.icns'):
