@@ -165,11 +165,8 @@ def create_portable_package():
         if os.path.exists(f"dist/{app_name}"):
             shutil.copytree(f"dist/{app_name}", f"{package_dir}/{app_name}")
     
-    # Copy documentation
-    docs_to_copy = ['README.md', 'LICENSE']
-    for doc in docs_to_copy:
-        if os.path.exists(doc):
-            shutil.copy2(doc, package_dir)
+    # Documentation is available in the source repository
+    # Not included in portable packages to keep them minimal
     
     # Create run script
     if platform.system() == 'Windows':
