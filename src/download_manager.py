@@ -82,6 +82,8 @@ class DownloadWorker(QThread):
         
         # Get bundled ffmpeg path
         ffmpeg_path = self.get_bundled_ffmpeg_path()
+        print(f"DEBUG: ffmpeg_path = {ffmpeg_path}")
+        print(f"DEBUG: format_selector = {format_selector}")
         
         ydl_opts = {
             'outtmpl': os.path.join(output_dir, output_template),
@@ -98,6 +100,12 @@ class DownloadWorker(QThread):
         # Force ffmpeg usage and set location
         if ffmpeg_path:
             ydl_opts['ffmpeg_location'] = ffmpeg_path
+            # Also add to PATH for yt-dlp to find
+            import os
+            current_path = os.environ.get('PATH', '')
+            tools_dir = os.path.dirname(ffmpeg_path)
+            if tools_dir not in current_path:
+                os.environ['PATH'] = tools_dir + os.pathsep + current_path
             
         # For video downloads, force merging
         if not self.settings.get('extract_audio', False) and '+' in format_selector:
@@ -108,6 +116,10 @@ class DownloadWorker(QThread):
                 'key': 'FFmpegVideoConvertor',
                 'preferedformat': 'mkv',
             }]
+        else:
+            # Even for single format, prefer ffmpeg if available
+            if ffmpeg_path:
+                ydl_opts['prefer_ffmpeg'] = True
         
         # Add subtitle options
         if self.settings.get('download_subtitles', False):
