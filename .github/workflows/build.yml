@@ -93,7 +93,11 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          dist/**/*
+          dist/*/*.exe
+          dist/*/*.app
+          dist/*/YT-Leechr-*
+          dist/*/*.zip
+          dist/*/*.tar.gz
         draft: true
         generate_release_notes: true
       env:
