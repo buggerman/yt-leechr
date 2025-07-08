@@ -101,7 +101,6 @@ class DownloadWorker(QThread):
         if ffmpeg_path:
             ydl_opts['ffmpeg_location'] = ffmpeg_path
             # Also add to PATH for yt-dlp to find
-            import os
             current_path = os.environ.get('PATH', '')
             tools_dir = os.path.dirname(ffmpeg_path)
             if tools_dir not in current_path:
