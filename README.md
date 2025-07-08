@@ -10,8 +10,9 @@
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![PyQt6](https://img.shields.io/badge/GUI-PyQt6-green.svg)](https://pypi.org/project/PyQt6/)
 [![Tests](https://img.shields.io/badge/tests-68%20passed-brightgreen.svg)](#testing)
-[![GitHub release](https://img.shields.io/github/release/buggerman/yt-leechr.svg)](https://github.com/buggerman/yt-leechr/releases)
+[![GitHub release](https://img.shields.io/github/v/release/buggerman/yt-leechr.svg)](https://github.com/buggerman/yt-leechr/releases)
 [![Build Status](https://github.com/buggerman/yt-leechr/workflows/Tests/badge.svg)](https://github.com/buggerman/yt-leechr/actions)
+[![Downloads](https://img.shields.io/github/downloads/buggerman/yt-leechr/total.svg)](https://github.com/buggerman/yt-leechr/releases)
 
 [Features](#features) • [Installation](#installation) • [Usage](#usage) • [Building](#building) • [Contributing](#contributing)
 
@@ -21,16 +22,39 @@
 
 YT Leechr provides an intuitive interface for downloading videos and audio from hundreds of websites, with advanced features like queue management, format selection, and batch downloads.
 
-## Features
+## 🚀 Quick Start
 
-- **Intuitive Interface**: Clean, modern GUI with drag-and-drop support
-- **Queue Management**: Download multiple videos with progress tracking
-- **Format Selection**: Choose video quality, extract audio, and customize output
-- **Subtitle Support**: Download and embed subtitles in multiple languages
-- **Cross-Platform**: Works on Windows, macOS, and Linux
-- **Dark Mode**: Supports light, dark, and system themes
-- **Playlist Support**: Download entire playlists or select specific videos
-- **Context Menus**: Right-click for advanced options like retry, pause, and folder access
+**Ready to use? Download the latest release for your platform:**
+
+- **📥 [Download for Windows](https://github.com/buggerman/yt-leechr/releases/latest)** - Standalone `.exe` executable
+- **📥 [Download for macOS](https://github.com/buggerman/yt-leechr/releases/latest)** - Native `.app` bundle
+- **📥 [Download for Linux](https://github.com/buggerman/yt-leechr/releases/latest)** - Portable executable
+
+*No installation required! Just download and run.*
+
+## ✨ Features
+
+### 🎯 Core Features
+- **🖥️ Intuitive Interface**: Clean, modern GUI with drag-and-drop support
+- **📋 Queue Management**: Download multiple videos with real-time progress tracking
+- **🎞️ Format Selection**: Choose video quality, extract audio, and customize output formats
+- **🎬 Playlist Support**: Download entire playlists or select specific videos
+- **📑 Subtitle Support**: Download and embed subtitles in multiple languages
+- **🌍 Cross-Platform**: Native builds for Windows, macOS, and Linux
+
+### 🎨 User Experience
+- **🌙 Dark Mode**: Supports light, dark, and system themes
+- **⚡ High-Quality Icons**: Custom-designed icons for crisp display on all platforms
+- **🖱️ Context Menus**: Right-click for advanced options like retry, pause, and folder access
+- **⌨️ Keyboard Shortcuts**: Quick access to common functions
+- **📱 Responsive Design**: Scales beautifully on different screen sizes
+
+### 🔧 Advanced Features
+- **🔀 Batch Downloads**: Paste multiple URLs for simultaneous downloads
+- **📁 Custom File Naming**: Flexible templates with variables like title, uploader, date
+- **⚙️ Advanced Settings**: Full access to yt-dlp options for power users
+- **🔄 Retry Logic**: Automatic retry on failed downloads with exponential backoff
+- **📊 Progress Analytics**: Detailed download statistics and speed monitoring
 
 ## Installation
 
