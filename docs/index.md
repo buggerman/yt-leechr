@@ -4,8 +4,6 @@ title: YT Leechr - Feature-Rich GUI for yt-dlp
 description: A modern, cross-platform graphical user interface for yt-dlp with advanced download management features
 ---
 
-# YT Leechr
-
 <div class="center">
   <img src="assets/icon.png" alt="YT Leechr Logo" width="128" height="128">
 </div>
