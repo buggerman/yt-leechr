@@ -120,12 +120,13 @@ Brief description of what's new or changed.
 - **⚠️ Intel Mac users**: Not supported - builds are ARM64 only
 
 ### Universal Linux
-- **Flatpak**: Works on any Linux distribution with Flatpak support
+- **Flatpak**: Works on x86_64 Linux distributions with Flatpak support
+- **⚠️ ARM64 Linux users**: Use native `linux-aarch64` builds instead
 
 ## ⚠️ Platform Status
 
 ### Current Limitations
-- **Flatpak**: Quality selection may default to 360p instead of best quality
+- **Flatpak**: Quality selection may default to 360p instead of best quality (x86_64 only)
 - **Windows**: Video/audio files may download separately instead of merged MKV
 - **Intel Macs**: **NOT SUPPORTED** - ARM64 builds only work on Apple Silicon
 
@@ -206,7 +207,7 @@ gh run watch && gh release edit vX.X.X --draft=false
 | Windows | x64 | ⚠️ Minor Issues | `YT-Leechr-windows-x64.exe` |
 | macOS | ARM64 | ✅ Full Support | `YT-Leechr-darwin-arm64-portable.tar.gz` |
 | macOS | Intel x64 | ❌ Not Supported | N/A |
-| Universal Linux | Any | ⚠️ Minor Issues | `yt-leechr.flatpak` |
+| Universal Linux | x86_64 | ⚠️ Minor Issues | `yt-leechr.flatpak` |
 
 ## 🔄 Automation Details
 

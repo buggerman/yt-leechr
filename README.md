@@ -115,7 +115,7 @@ flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flat
 **Features:**
 - 🔒 **Sandboxed Security**: Runs in isolated environment with limited system access
 - 🎯 **Minimal Permissions**: Only accesses Downloads, Videos, and Music directories
-- 🌐 **Universal**: Works on any Linux distribution with Flatpak support
+- 🌐 **Universal**: Works on x86_64 Linux distributions with Flatpak support
 - 🔄 **Auto-Updates**: Seamless updates through Flatpak system
 
 For detailed Flatpak instructions, see [FLATPAK.md](FLATPAK.md).
@@ -177,9 +177,10 @@ YT Leechr supports the same sites as yt-dlp, including:
 
 ### Current Platform Issues
 
-**Flatpak (Linux)**
+**Flatpak (Linux x86_64)**
 - Quality selection may default to 360p instead of best available quality
 - Working on resolution in next update
+- **ARM64 Linux users**: Use native `linux-aarch64` builds for better performance
 
 **Windows Executable**  
 - Video/audio files may download separately instead of merged MKV

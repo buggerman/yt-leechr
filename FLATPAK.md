@@ -2,6 +2,8 @@
 
 This document covers building, installing, and distributing YT Leechr as a Flatpak package.
 
+**⚠️ Architecture Support**: This Flatpak is built for **x86_64 architecture only**. ARM64 Linux users should use the native `linux-aarch64` builds instead for better performance.
+
 ## Quick Installation
 
 ### From Release (Recommended)
