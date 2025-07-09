@@ -149,7 +149,7 @@ jobs:
           dist/YT-Leechr-linux-aarch64/YT-Leechr-linux-aarch64
           dist/YT-Leechr-linux-aarch64/YT-Leechr-linux-aarch64-portable.tar.gz
           dist/YT-Leechr-macos-x64/YT Leechr.app
-          dist/YT-Leechr-macos-x64/YT-Leechr-darwin-arm64-portable.tar.gz
+          dist/YT-Leechr-macos-x64/YT-Leechr-darwin-x64-portable.tar.gz
         draft: true
         generate_release_notes: true
       env:
