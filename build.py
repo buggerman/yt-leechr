@@ -13,14 +13,23 @@ from pathlib import Path
 def get_platform_name():
     """Get platform-specific name for builds"""
     system = platform.system().lower()
-    arch = platform.machine().lower()
     
-    if arch in ('x86_64', 'amd64'):
-        arch = 'x64'
-    elif arch in ('aarch64', 'arm64'):
-        arch = 'arm64'
-    elif arch.startswith('arm'):
-        arch = 'arm'
+    # Allow architecture override via environment variable for cross-compilation
+    arch_override = os.environ.get('BUILD_ARCH')
+    if arch_override:
+        arch = arch_override.lower()
+        if arch == 'aarch64':
+            arch = 'aarch64'  # Keep Linux ARM64 naming
+        elif arch in ('arm64', 'aarch64'):
+            arch = 'arm64' if system == 'windows' else 'aarch64'
+    else:
+        arch = platform.machine().lower()
+        if arch in ('x86_64', 'amd64'):
+            arch = 'x64'
+        elif arch in ('aarch64', 'arm64'):
+            arch = 'arm64' if system == 'windows' else 'aarch64'
+        elif arch.startswith('arm'):
+            arch = 'arm'
     
     return f"{system}-{arch}"
 
