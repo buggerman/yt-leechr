@@ -20,8 +20,13 @@ def get_platform_name():
         arch = arch_override.lower()
         if arch == 'aarch64':
             arch = 'aarch64'  # Keep Linux ARM64 naming
-        elif arch in ('arm64', 'aarch64'):
-            arch = 'arm64' if system == 'windows' else 'aarch64'
+        elif arch == 'arm64':
+            if system == 'windows':
+                arch = 'arm64'
+            elif system == 'darwin':
+                arch = 'arm64'  # macOS uses arm64 for Apple Silicon
+            else:
+                arch = 'aarch64'  # Linux uses aarch64
     else:
         arch = platform.machine().lower()
         if arch in ('x86_64', 'amd64'):
