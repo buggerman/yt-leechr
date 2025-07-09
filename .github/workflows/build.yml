@@ -30,9 +30,9 @@ jobs:
             artifact: windows-x64
             arch: x64
           - os: macos-latest
-            name: macOS
-            artifact: macos-x64
-            arch: x64
+            name: macOS ARM64
+            artifact: macos-arm64
+            arch: arm64
 
     steps:
     - uses: actions/checkout@v4
@@ -148,8 +148,8 @@ jobs:
           dist/YT-Leechr-linux-x64/YT-Leechr-linux-x64-portable.tar.gz
           dist/YT-Leechr-linux-aarch64/YT-Leechr-linux-aarch64
           dist/YT-Leechr-linux-aarch64/YT-Leechr-linux-aarch64-portable.tar.gz
-          dist/YT-Leechr-macos-x64/YT Leechr.app
-          dist/YT-Leechr-macos-x64/YT-Leechr-darwin-x64-portable.tar.gz
+          dist/YT-Leechr-macos-arm64/YT Leechr.app
+          dist/YT-Leechr-macos-arm64/YT-Leechr-darwin-arm64-portable.tar.gz
         draft: true
         generate_release_notes: true
       env:

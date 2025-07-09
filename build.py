@@ -27,7 +27,12 @@ def get_platform_name():
         if arch in ('x86_64', 'amd64'):
             arch = 'x64'
         elif arch in ('aarch64', 'arm64'):
-            arch = 'arm64' if system == 'windows' else 'aarch64'
+            if system == 'windows':
+                arch = 'arm64'
+            elif system == 'darwin':
+                arch = 'arm64'  # macOS uses arm64 for Apple Silicon
+            else:
+                arch = 'aarch64'  # Linux uses aarch64
         elif arch.startswith('arm'):
             arch = 'arm'
     
